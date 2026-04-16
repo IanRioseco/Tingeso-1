@@ -19,6 +19,7 @@ public class PackageRequest {
     @NotBlank(message = "El destino es obligatorio")
     private String destination;
 
+    @NotBlank(message = "La descripcion es obligatoria")
     private String description;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
@@ -40,7 +41,11 @@ public class PackageRequest {
 
     private String season;
 
+    @NotBlank(message = "Los servicios incluidos son obligatorios")
     private String servicesIncluded;
 
     private String restrictions;
+
+    @NotBlank(message = "Las condiciones del paquete son obligatorias")
+    private String conditions;
 }

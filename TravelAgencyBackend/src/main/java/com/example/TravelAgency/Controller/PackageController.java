@@ -1,6 +1,7 @@
 package com.example.TravelAgency.Controller;
 
 import com.example.TravelAgency.Entity.PackageEntity;
+import com.example.TravelAgency.Service.AccessControlService;
 import com.example.TravelAgency.Service.PackageService;
 import com.example.TravelAgency.dto.request.PackageRequest;
 import com.example.TravelAgency.dto.response.PackageResponse;
@@ -23,9 +24,17 @@ import java.util.Map;
 public class PackageController {
 
     private final PackageService packageService;
+    private final AccessControlService accessControlService;
 
     @GetMapping
     public ResponseEntity<List<PackageResponse>> findAll() {
+        return ResponseEntity.ok(packageService.findAvailable().stream().map(PackageResponse::from).toList());
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<PackageResponse>> findAllForAdmin(
+            @RequestHeader("X-User-Id") Long userId) {
+        accessControlService.requireAdmin(userId);
         return ResponseEntity.ok(packageService.findAll().stream().map(PackageResponse::from).toList());
     }
 
@@ -40,9 +49,16 @@ public class PackageController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) String travelType) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String travelType,
+            @RequestParam(required = false) String season,
+            @RequestParam(required = false) Integer minDurationDays,
+            @RequestParam(required = false) Integer maxDurationDays) {
         return ResponseEntity.ok(
-                packageService.search(destination, minPrice, maxPrice, startDate, travelType)
+                packageService.search(
+                                destination, minPrice, maxPrice, startDate, endDate,
+                                travelType, season, minDurationDays, maxDurationDays
+                        )
                         .stream()
                         .map(PackageResponse::from)
                         .toList()
@@ -51,11 +67,26 @@ public class PackageController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PackageResponse> findById(@PathVariable Long id) {
+        PackageEntity pkg = packageService.findById(id);
+        if (!packageService.isPubliclyReservable(pkg)) {
+            throw new com.example.TravelAgency.Exceptions.BusinessException(
+                    "El paquete solicitado no esta disponible para clientes"
+            );
+        }
+        return ResponseEntity.ok(PackageResponse.from(pkg));
+    }
+
+    @GetMapping("/admin/{id}")
+    public ResponseEntity<PackageResponse> findByIdForAdmin(@RequestHeader("X-User-Id") Long userId,
+                                                            @PathVariable Long id) {
+        accessControlService.requireAdmin(userId);
         return ResponseEntity.ok(PackageResponse.from(packageService.findById(id)));
     }
 
     @PostMapping
-    public ResponseEntity<PackageResponse> create(@Valid @RequestBody PackageRequest req) {
+    public ResponseEntity<PackageResponse> create(@RequestHeader("X-User-Id") Long userId,
+                                                  @Valid @RequestBody PackageRequest req) {
+        accessControlService.requireAdmin(userId);
         PackageEntity pkg = PackageEntity.builder()
                 .name(req.getName())
                 .destination(req.getDestination())
@@ -68,14 +99,17 @@ public class PackageController {
                 .season(req.getSeason())
                 .servicesIncluded(req.getServicesIncluded())
                 .restrictions(req.getRestrictions())
+                .conditions(req.getConditions())
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(PackageResponse.from(packageService.create(pkg)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PackageResponse> update(@PathVariable Long id,
-                                                  @RequestBody PackageRequest req) {
+    public ResponseEntity<PackageResponse> update(@RequestHeader("X-User-Id") Long userId,
+                                                  @PathVariable Long id,
+                                                  @Valid @RequestBody PackageRequest req) {
+        accessControlService.requireAdmin(userId);
         PackageEntity updated = PackageEntity.builder()
                 .name(req.getName())
                 .destination(req.getDestination())
@@ -88,19 +122,24 @@ public class PackageController {
                 .season(req.getSeason())
                 .servicesIncluded(req.getServicesIncluded())
                 .restrictions(req.getRestrictions())
+                .conditions(req.getConditions())
                 .build();
         return ResponseEntity.ok(PackageResponse.from(packageService.update(id, updated)));
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Map<String, String>> changeStatus(@PathVariable Long id,
+    public ResponseEntity<Map<String, String>> changeStatus(@RequestHeader("X-User-Id") Long userId,
+                                                            @PathVariable Long id,
                                                             @RequestParam PackageStatus status) {
+        accessControlService.requireAdmin(userId);
         packageService.changeStatus(id, status);
         return ResponseEntity.ok(Map.of("message", "Estado actualizado correctamente"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> delete(@RequestHeader("X-User-Id") Long userId,
+                                                      @PathVariable Long id) {
+        accessControlService.requireAdmin(userId);
         packageService.delete(id);
         return ResponseEntity.ok(Map.of("message", "Paquete eliminado correctamente"));
     }

@@ -27,6 +27,7 @@ public class PackageResponse {
     PackageStatus status;
     String servicesIncluded;
     String restrictions;
+    String conditions;
     LocalDateTime createdAt;
 
     public static PackageResponse from(PackageEntity pkg) {
@@ -46,6 +47,7 @@ public class PackageResponse {
                 .status(pkg.getStatus())
                 .servicesIncluded(pkg.getServicesIncluded())
                 .restrictions(pkg.getRestrictions())
+                .conditions(pkg.getConditions())
                 .createdAt(pkg.getCreatedAt())
                 .build();
     }

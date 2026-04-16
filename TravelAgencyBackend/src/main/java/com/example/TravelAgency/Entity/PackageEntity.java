@@ -65,6 +65,10 @@ public class PackageEntity {
     @Column(columnDefinition = "TEXT")
     private String restrictions;
 
+    /** Condiciones comerciales y legales del paquete (epica 2). */
+    @Column(name = "commercial_conditions", columnDefinition = "TEXT")
+    private String conditions;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

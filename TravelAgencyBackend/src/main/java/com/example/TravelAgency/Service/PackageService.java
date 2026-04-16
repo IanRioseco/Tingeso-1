@@ -7,6 +7,7 @@ import com.example.TravelAgency.Repository.PackageRepository;
 import com.example.TravelAgency.enums.PackageStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,22 +26,33 @@ public class PackageService {
     }
 
     public PackageEntity findById(Long id) {
-        return packageRepository.findById(id)
+        PackageEntity pkg = packageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paquete no encontrado"));
+        return syncStatus(pkg);
     }
 
     public List<PackageEntity> findAll() {
-        return packageRepository.findAll();
+        return packageRepository.findAll().stream()
+                .map(this::syncStatus)
+                .toList();
     }
 
     public List<PackageEntity> findAvailable() {
-        return packageRepository.findByStatus(PackageStatus.AVAILABLE);
+        return packageRepository.findPublicPackages().stream()
+                .map(this::syncStatus)
+                .filter(this::isPubliclyReservable)
+                .toList();
     }
 
     public List<PackageEntity> search(String destination, BigDecimal minPrice,
                                       BigDecimal maxPrice, LocalDate startDate,
-                                      String travelType) {
-        return packageRepository.searchPackages(destination, minPrice, maxPrice, startDate, travelType);
+                                      LocalDate endDate, String travelType,
+                                      String season, Integer minDurationDays,
+                                      Integer maxDurationDays) {
+        return packageRepository.searchPackages(
+                destination, minPrice, maxPrice, startDate, endDate,
+                travelType, season, minDurationDays, maxDurationDays
+        ).stream().map(this::syncStatus).filter(this::isPubliclyReservable).toList();
     }
 
     public PackageEntity update(Long id, PackageEntity updated) {
@@ -55,6 +67,9 @@ public class PackageService {
             }
             if (updated.getStartDate() != null && !updated.getStartDate().equals(existing.getStartDate())) {
                 throw new BusinessException("No se puede modificar la fecha de inicio con reservas activas");
+            }
+            if (updated.getEndDate() != null && !updated.getEndDate().equals(existing.getEndDate())) {
+                throw new BusinessException("No se puede modificar la fecha de termino con reservas activas");
             }
         }
 
@@ -93,12 +108,15 @@ public class PackageService {
         if (updated.getRestrictions() != null) {
             existing.setRestrictions(updated.getRestrictions());
         }
+        if (updated.getConditions() != null) {
+            existing.setConditions(updated.getConditions());
+        }
         if (updated.getStatus() != null) {
             existing.setStatus(updated.getStatus());
         }
 
         validatePackage(existing);
-        return packageRepository.save(existing);
+        return syncStatus(packageRepository.save(existing));
     }
 
     public void changeStatus(Long id, PackageStatus newStatus) {
@@ -110,6 +128,16 @@ public class PackageService {
 
         pkg.setStatus(newStatus);
         packageRepository.save(pkg);
+    }
+
+    public boolean isPubliclyReservable(PackageEntity pkg) {
+        LocalDate today = LocalDate.now();
+        return pkg.getStatus() == PackageStatus.AVAILABLE
+                && pkg.getAvailableSlots() > 0
+                && pkg.getStartDate() != null
+                && !pkg.getStartDate().isBefore(today)
+                && pkg.getEndDate() != null
+                && !pkg.getEndDate().isBefore(today);
     }
 
     public void delete(Long id) {
@@ -142,12 +170,38 @@ public class PackageService {
         packageRepository.save(pkg);
     }
 
+    @Transactional
+    public PackageEntity syncStatus(PackageEntity pkg) {
+        PackageStatus computedStatus = calculateOperationalStatus(pkg);
+        if (pkg.getStatus() != computedStatus) {
+            pkg.setStatus(computedStatus);
+            return packageRepository.save(pkg);
+        }
+        return pkg;
+    }
+
+    private PackageStatus calculateOperationalStatus(PackageEntity pkg) {
+        if (pkg.getStatus() == PackageStatus.CANCELED) {
+            return PackageStatus.CANCELED;
+        }
+        if (pkg.getEndDate() != null && !pkg.getEndDate().isAfter(LocalDate.now())) {
+            return PackageStatus.EXPIRED;
+        }
+        if (pkg.getAvailableSlots() <= 0) {
+            return PackageStatus.SOLD_OUT;
+        }
+        return PackageStatus.AVAILABLE;
+    }
+
     private void validatePackage(PackageEntity pkg) {
         if (pkg.getName() == null || pkg.getName().isBlank()) {
             throw new BusinessException("El nombre del paquete es obligatorio");
         }
         if (pkg.getDestination() == null || pkg.getDestination().isBlank()) {
             throw new BusinessException("El destino es obligatorio");
+        }
+        if (pkg.getDescription() == null || pkg.getDescription().isBlank()) {
+            throw new BusinessException("La descripcion del paquete es obligatoria");
         }
         if (pkg.getPrice() == null || pkg.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("El precio debe ser mayor que cero");
@@ -160,6 +214,12 @@ public class PackageService {
         }
         if (!pkg.getEndDate().isAfter(pkg.getStartDate())) {
             throw new BusinessException("La fecha de termino debe ser posterior a la de inicio");
+        }
+        if (pkg.getServicesIncluded() == null || pkg.getServicesIncluded().isBlank()) {
+            throw new BusinessException("Los servicios incluidos son obligatorios");
+        }
+        if (pkg.getConditions() == null || pkg.getConditions().isBlank()) {
+            throw new BusinessException("Las condiciones del paquete son obligatorias");
         }
     }
 }

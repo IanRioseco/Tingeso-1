@@ -6,6 +6,7 @@ import com.example.TravelAgency.Entity.UserEntity;
 import com.example.TravelAgency.Exceptions.BusinessException;
 import com.example.TravelAgency.Exceptions.ResourceNotFoundException;
 import com.example.TravelAgency.Repository.BookingRepository;
+import com.example.TravelAgency.config.TravelProperties;
 import com.example.TravelAgency.enums.BookingStatus;
 import com.example.TravelAgency.enums.PackageStatus;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final PackageService packageService;
+    private final PromotionService promotionService;
+    private final TravelProperties travelProperties;
 
     @Transactional
     public BookingEntity create(UserEntity user, Long packageId, int passengers, String sessionId) {
@@ -47,9 +50,10 @@ public class BookingService {
             throw new BusinessException("Solo hay " + packageEntity.getAvailableSlots() + " cupos disponibles");
         }
 
-        // Por ahora se registra la reserva sin motor de descuentos.
         BigDecimal baseAmount = packageEntity.getPrice().multiply(BigDecimal.valueOf(passengers));
-        // Cuando exista DiscountService, aqui se puede calcular descuento y monto final.
+        PromotionService.DiscountResult discountResult = promotionService.calculate(
+                baseAmount, passengers, user, sessionId
+        );
 
         // Los cupos se descuentan dentro de la misma transaccion para evitar sobreventa.
         packageService.decreaseSlots(packageEntity, passengers);
@@ -60,11 +64,13 @@ public class BookingService {
         booking.setPackageEntity(packageEntity);
         booking.setPassengersCount(passengers);
         booking.setBaseAmount(baseAmount);
-        booking.setDiscountAmount(BigDecimal.ZERO);
-        booking.setFinalAmount(baseAmount);
-        booking.setDiscountDetail("Sin descuentos aplicados");
+        booking.setDiscountAmount(discountResult.discountAmount());
+        booking.setFinalAmount(discountResult.finalAmount());
+        booking.setDiscountDetail(discountResult.discountDetail());
         booking.setBookingStatus(BookingStatus.PENDING);
         booking.setSessionId(sessionId);
+        booking.setExpiresAt(LocalDateTime.now().plusDays(
+                travelProperties.getBooking().getPendingExpiresDays()));
 
         return bookingRepository.save(booking);
     }
@@ -83,9 +89,16 @@ public class BookingService {
         return bookingRepository.findAll();
     }
 
+    public List<BookingEntity> findConfirmedBetween(LocalDateTime from, LocalDateTime to) {
+        return bookingRepository.findConfirmedBetween(from, to);
+    }
+
     @Transactional
     public void confirm(Long bookingId) {
         BookingEntity booking = findById(bookingId);
+        if (booking.getFinalAmount() == null || booking.getFinalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("La reserva debe tener un monto final mayor que cero para confirmarse");
+        }
         // Confirmar no descuenta cupos otra vez; eso ya ocurrio al crear la reserva.
         booking.setBookingStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);

@@ -58,4 +58,35 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     // Reservas de la misma sesion (para descuento multi-paquete)
     List<BookingEntity> findBySessionId(String sessionId);
+
+    /**
+     * Reservas pendientes o confirmadas del usuario creadas desde {@code since} (compra multiple en periodo).
+     */
+    @Query("""
+        SELECT COUNT(b) FROM BookingEntity b
+        WHERE b.user = :user
+        AND b.bookingStatus IN ('PENDING', 'CONFIRMED')
+        AND b.createdAt >= :since
+        """)
+    long countActiveBookingsSince(@Param("user") UserEntity user, @Param("since") LocalDateTime since);
+
+    /**
+     * Reporte de ventas: registro de reserva o pago aprobado dentro del rango; excluye canceladas.
+     */
+    @Query("""
+        SELECT DISTINCT b FROM BookingEntity b
+        LEFT JOIN FETCH b.user
+        LEFT JOIN FETCH b.packageEntity
+        WHERE b.bookingStatus <> 'CANCELLED'
+        AND (
+          (b.createdAt BETWEEN :from AND :to)
+          OR EXISTS (
+            SELECT 1 FROM PaymentEntity p
+            WHERE p.booking = b
+            AND p.paidAt BETWEEN :from AND :to
+            AND p.status = 'APPROVED'
+          )
+        )
+        """)
+    List<BookingEntity> findForSalesReport(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }
