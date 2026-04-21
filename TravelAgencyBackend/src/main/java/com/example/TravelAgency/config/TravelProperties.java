@@ -14,9 +14,9 @@ public class TravelProperties {
 
     @Data
     public static class Booking {
-        /**
-         * Plazo en dias para pagar una reserva pendiente antes de expirar y liberar cupos.
-         */
+        
+        // Plazo en dias para pagar una reserva pendiente antes de expirar y liberar cupos.
+         
         private int pendingExpiresDays = 30;
     }
 
@@ -27,9 +27,9 @@ public class TravelProperties {
         private int frequentMinPaidBookings = 3;
         private BigDecimal frequentPercent = new BigDecimal("5");
         private BigDecimal multiPackagePercent = new BigDecimal("5");
-        /**
-         * Ventana en dias para considerar otra reserva del mismo cliente como compra multiple.
-         */
+        
+        // Ventana en dias para considerar otra reserva del mismo cliente como compra multiple.
+        
         private int multiPackageLookbackDays = 7;
         private BigDecimal maxTotalPercent = new BigDecimal("20");
     }

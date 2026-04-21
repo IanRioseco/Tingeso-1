@@ -32,6 +32,8 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
     long countConfirmedByUser(@Param("user") UserEntity user);
 
     // Reporte: listado de ventas por periodo
+    // Nota: se filtra por `createdAt` de la reserva. En este proyecto la confirmación está asociada al pago,
+    // pero la fecha de operación puede variar según cómo armes el reporte (creación vs pago).
     @Query("""
         SELECT b FROM BookingEntity b
         WHERE b.bookingStatus = 'CONFIRMED'
@@ -42,6 +44,8 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
                                              @Param("to") LocalDateTime to);
 
     // Reporte: ranking de paquetes por periodo
+    // Este ranking usa reservas confirmadas (no pagos). En paralelo existe otro ranking basado en pagos aprobados
+    // (`PaymentRepository.rankingPackagesBetween`) que refleja ventas efectivas.
     @Query("""
         SELECT b.packageEntity.id, b.packageEntity.name,
                COUNT(b),
@@ -59,9 +63,9 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
     // Reservas de la misma sesion (para descuento multi-paquete)
     List<BookingEntity> findBySessionId(String sessionId);
 
-    /**
-     * Reservas pendientes o confirmadas del usuario creadas desde {@code since} (compra multiple en periodo).
-     */
+
+    // Reservas pendientes o confirmadas del usuario creadas desde {@code since} (compra multiple en periodo).
+
     @Query("""
         SELECT COUNT(b) FROM BookingEntity b
         WHERE b.user = :user
@@ -70,9 +74,12 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
         """)
     long countActiveBookingsSince(@Param("user") UserEntity user, @Param("since") LocalDateTime since);
 
-    /**
-     * Reporte de ventas: registro de reserva o pago aprobado dentro del rango; excluye canceladas.
-     */
+     // Reporte de ventas: registro de reserva o pago aprobado dentro del rango; excluye canceladas.
+     // La condición OR permite que una venta aparezca si:
+     // - la reserva fue creada en el rango (útil para “movimiento de reservas”), o
+     // - existe un pago APPROVED en el rango (útil para “ventas efectivas”).
+     // Se hace `DISTINCT` porque el EXISTS puede coincidir con pagos y evitar duplicados.
+
     @Query("""
         SELECT DISTINCT b FROM BookingEntity b
         LEFT JOIN FETCH b.user

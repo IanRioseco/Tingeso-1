@@ -47,11 +47,12 @@ public class PackageService {
     public List<PackageEntity> search(String destination, BigDecimal minPrice,
                                       BigDecimal maxPrice, LocalDate startDate,
                                       LocalDate endDate, String travelType,
-                                      String season, Integer minDurationDays,
+                          String season, Integer minAvailableSlots,
+                          Integer minDurationDays,
                                       Integer maxDurationDays) {
         return packageRepository.searchPackages(
                 destination, minPrice, maxPrice, startDate, endDate,
-                travelType, season, minDurationDays, maxDurationDays
+            travelType, season, minAvailableSlots, minDurationDays, maxDurationDays
         ).stream().map(this::syncStatus).filter(this::isPubliclyReservable).toList();
     }
 

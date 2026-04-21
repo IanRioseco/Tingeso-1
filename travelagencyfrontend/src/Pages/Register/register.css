@@ -1,0 +1,56 @@
+.register-page {
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: var(--color-gray-100);
+}
+
+.register-card {
+  width: min(560px, 100%);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-8);
+}
+
+.register-card h2 {
+  margin: 0;
+  color: var(--color-gray-800);
+}
+
+.register-subtitle {
+  margin: var(--space-2) 0 var(--space-6);
+  color: var(--color-gray-600);
+}
+
+.register-hint {
+  margin: 0 0 var(--space-4);
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+}
+
+.register-btn {
+  width: 100%;
+  margin-bottom: var(--space-4);
+}
+
+.register-login {
+  margin: var(--space-4) 0 0;
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+}
+
+.register-login a {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .register-card {
+    padding: var(--space-6);
+  }
+}

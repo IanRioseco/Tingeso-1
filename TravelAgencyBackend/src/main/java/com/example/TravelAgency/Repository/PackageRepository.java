@@ -30,13 +30,14 @@ public interface PackageRepository extends JpaRepository<PackageEntity, Long> {
         SELECT p FROM PackageEntity p
         WHERE p.status = 'AVAILABLE'
         AND p.availableSlots > 0
-        AND (:destination IS NULL OR LOWER(p.destination) LIKE LOWER(CONCAT('%', :destination, '%')))
+        AND (:destination IS NULL OR p.destination LIKE CONCAT('%', :destination, '%'))
         AND (:minPrice IS NULL OR p.price >= :minPrice)
         AND (:maxPrice IS NULL OR p.price <= :maxPrice)
         AND (:startDate IS NULL OR p.startDate >= :startDate)
         AND (:endDate IS NULL OR p.endDate <= :endDate)
         AND (:travelType IS NULL OR p.travelType = :travelType)
         AND (:season IS NULL OR p.season = :season)
+        AND (:minAvailableSlots IS NULL OR p.availableSlots >= :minAvailableSlots)
         AND (:minDurationDays IS NULL OR p.durationDays >= :minDurationDays)
         AND (:maxDurationDays IS NULL OR p.durationDays <= :maxDurationDays)
         AND p.startDate >= CURRENT_DATE
@@ -51,6 +52,7 @@ public interface PackageRepository extends JpaRepository<PackageEntity, Long> {
             @Param("endDate") LocalDate endDate,
             @Param("travelType") String travelType,
             @Param("season") String season,
+            @Param("minAvailableSlots") Integer minAvailableSlots,
             @Param("minDurationDays") Integer minDurationDays,
             @Param("maxDurationDays") Integer maxDurationDays
     );

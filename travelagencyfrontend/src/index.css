@@ -1,3 +1,29 @@
+:root {
+  --navbar-height: 72px;
+  --max-width: 1200px;
+
+  --color-white: #ffffff;
+  --color-primary: #0f4c81;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-600: #4b5563;
+  --color-gray-800: #1f2937;
+  --color-gray-400: #9ca3af;
+
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --font-size-sm: 0.875rem;
+  --font-size-xl: 1.25rem;
+
+  --radius-md: 0.5rem;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -15,6 +41,25 @@ code {
 
 #root {
   min-height: 100vh;
+}
+
+.btn {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.btn.btn-secondary {
+  background: var(--color-gray-100);
+  color: var(--color-gray-800);
 }
 
 .test-page {

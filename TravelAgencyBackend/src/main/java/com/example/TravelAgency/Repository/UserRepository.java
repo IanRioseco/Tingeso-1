@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +17,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmail(String email);
 
+    Optional<UserEntity> findByKeycloakUserId(String keycloakUserId);
+
     boolean existsByEmail(String email);
+
+    boolean existsByDocumentId(String documentId);
 
     List<UserEntity> findByStatus(UserStatus status);
 
@@ -30,14 +34,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
         WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :name, '%'))
     """)
     List<UserEntity> findByFullNameContaining(@Param("name") String name);
-
-    @Query("""
-        SELECT u FROM UserEntity u
-        WHERE u.status = 'LOCKED'
-        AND u.lockedUntil IS NOT NULL
-        AND u.lockedUntil <= :now
-    """)
-    List<UserEntity> findExpiredLocks(@Param("now") LocalDateTime now);
 
     // Depende de una entidad Booking que todavia no existe en el proyecto.
     default List<UserEntity> findFrequentClients(int minBookings) {

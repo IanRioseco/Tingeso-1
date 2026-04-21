@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -32,6 +33,7 @@ public class PackageController {
     }
 
     @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PackageResponse>> findAllForAdmin(
             @RequestHeader("X-User-Id") Long userId) {
         accessControlService.requireAdmin(userId);
@@ -52,12 +54,13 @@ public class PackageController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String travelType,
             @RequestParam(required = false) String season,
+            @RequestParam(required = false) Integer availableSlots,
             @RequestParam(required = false) Integer minDurationDays,
             @RequestParam(required = false) Integer maxDurationDays) {
         return ResponseEntity.ok(
                 packageService.search(
                                 destination, minPrice, maxPrice, startDate, endDate,
-                                travelType, season, minDurationDays, maxDurationDays
+                    travelType, season, availableSlots, minDurationDays, maxDurationDays
                         )
                         .stream()
                         .map(PackageResponse::from)
@@ -77,6 +80,7 @@ public class PackageController {
     }
 
     @GetMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PackageResponse> findByIdForAdmin(@RequestHeader("X-User-Id") Long userId,
                                                             @PathVariable Long id) {
         accessControlService.requireAdmin(userId);
@@ -84,6 +88,7 @@ public class PackageController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PackageResponse> create(@RequestHeader("X-User-Id") Long userId,
                                                   @Valid @RequestBody PackageRequest req) {
         accessControlService.requireAdmin(userId);
@@ -106,6 +111,7 @@ public class PackageController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PackageResponse> update(@RequestHeader("X-User-Id") Long userId,
                                                   @PathVariable Long id,
                                                   @Valid @RequestBody PackageRequest req) {
@@ -128,6 +134,7 @@ public class PackageController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> changeStatus(@RequestHeader("X-User-Id") Long userId,
                                                             @PathVariable Long id,
                                                             @RequestParam PackageStatus status) {
@@ -137,6 +144,7 @@ public class PackageController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> delete(@RequestHeader("X-User-Id") Long userId,
                                                       @PathVariable Long id) {
         accessControlService.requireAdmin(userId);

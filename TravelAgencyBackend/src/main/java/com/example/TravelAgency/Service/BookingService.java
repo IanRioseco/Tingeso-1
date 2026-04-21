@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class BookingService {
@@ -27,6 +28,11 @@ public class BookingService {
     private final PromotionService promotionService;
     private final TravelProperties travelProperties;
 
+    /**
+    Crea una nueva reserva para el usuario y el paquete indicados.
+    Aplica las reglas de negocio de cupos, estado del paquete y descuentos/promociones
+    y deja la reserva en estado PENDING hasta que exista un pago confirmado.
+     */
     @Transactional
     public BookingEntity create(UserEntity user, Long packageId, int passengers, String sessionId) {
         // La reserva solo tiene sentido con al menos un pasajero.
@@ -54,6 +60,8 @@ public class BookingService {
         PromotionService.DiscountResult discountResult = promotionService.calculate(
                 baseAmount, passengers, user, sessionId
         );
+        // `sessionId` se usa para reglas tipo “multi-paquete en una misma sesión” (p. ej. carrito/flujo).
+        // No es un sessionId de Spring Security: es un identificador funcional que el frontend envía.
 
         // Los cupos se descuentan dentro de la misma transaccion para evitar sobreventa.
         packageService.decreaseSlots(packageEntity, passengers);
@@ -69,29 +77,48 @@ public class BookingService {
         booking.setDiscountDetail(discountResult.discountDetail());
         booking.setBookingStatus(BookingStatus.PENDING);
         booking.setSessionId(sessionId);
+        // La expiración permite “reservar cupo” por un tiempo acotado.
+        // Si no hay pago antes de este vencimiento, una tarea programada expira la reserva y libera cupos.
         booking.setExpiresAt(LocalDateTime.now().plusDays(
                 travelProperties.getBooking().getPendingExpiresDays()));
 
         return bookingRepository.save(booking);
     }
 
+
+    // Obtiene una reserva por su identificador o lanza excepcion si no existe.
+
     public BookingEntity findById(Long id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada"));
     }
+
+
+    // Obtiene todas las reservas asociadas al usuario entregado.
 
     public List<BookingEntity> findByUser(UserEntity user) {
         // Se consulta por id para depender de una clave estable, no del estado del objeto en memoria.
         return bookingRepository.findByUserId(user.getId());
     }
 
+
+     // Obtiene todas las reservas registradas en el sistema.
+
     public List<BookingEntity> findAll() {
         return bookingRepository.findAll();
     }
 
+
+    // Obtiene las reservas confirmadas dentro del rango de fechas indicado.
+    // Utilizado principalmente para reportes de ventas.
+
     public List<BookingEntity> findConfirmedBetween(LocalDateTime from, LocalDateTime to) {
         return bookingRepository.findConfirmedBetween(from, to);
     }
+
+
+    // Confirma una reserva existente.
+    // No vuelve a modificar cupos, ya que estos se descuentan al crear la reserva.
 
     @Transactional
     public void confirm(Long bookingId) {
@@ -103,6 +130,10 @@ public class BookingService {
         booking.setBookingStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
     }
+
+
+    // Cancela una reserva pendiente, validando que no haya sido confirmada ni expirada.
+    // Al cancelar se devuelven los cupos al paquete asociado.
 
     @Transactional
     public void cancel(Long bookingId) {
@@ -126,9 +157,16 @@ public class BookingService {
     }
 
     // Libera automaticamente los cupos de reservas pendientes que superaron su vencimiento.
+
+    // Tarea programada que marca como expiradas las reservas pendientes cuyo plazo vencio
+    // y devuelve sus cupos a los paquetes correspondientes.
+     
     @Scheduled(fixedRate = 300000)
     @Transactional
     public void expireUnpaidBookings() {
+        // Se ejecuta cada 5 minutos: busca reservas PENDING vencidas y las pasa a EXPIRED.
+        // Importante: esto “revierte” el descuento de cupos hecho al crear la reserva, para que el stock
+        // no quede bloqueado indefinidamente.
         List<BookingEntity> expired = bookingRepository
                 .findByBookingStatusAndExpiresAtBefore(BookingStatus.PENDING, LocalDateTime.now());
 

@@ -11,13 +11,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+
 @Repository
 public interface PaymentRepository extends JpaRepository<PaymentEntity, Long> {
 
+
+    // Obtiene el pago asociado a una reserva, si existe.
+
     Optional<PaymentEntity> findByBooking(BookingEntity booking);
 
+    /**
+    Indica si ya existe un pago para la reserva dada.
+    Se usa para evitar pagos duplicados sobre la misma reserva.
+     */
     boolean existsByBooking(BookingEntity booking);
 
+    /**
+    Lista pagos aprobados dentro de un rango de fechas,
+    cargando ademas la reserva, el usuario y el paquete para uso en reportes.
+     */
     @Query("""
         SELECT p FROM PaymentEntity p
         JOIN FETCH p.booking b
@@ -30,6 +42,10 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, Long> {
     List<PaymentEntity> findApprovedPaymentsBetween(@Param("from") LocalDateTime from,
                                                     @Param("to") LocalDateTime to);
 
+    /**
+    Calcula un ranking de paquetes vendidos en base a pagos aprobados
+    en el periodo indicado, considerando cantidad de pagos, pasajeros y montos.
+    */
     @Query("""
         SELECT b.packageEntity.id,
                b.packageEntity.name,

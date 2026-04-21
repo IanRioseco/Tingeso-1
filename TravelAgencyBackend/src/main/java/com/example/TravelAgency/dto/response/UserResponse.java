@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class UserResponse {
     Long id;
+    String keycloakUserId;
     String fullName;
     String email;
     String phone;
@@ -20,12 +21,12 @@ public class UserResponse {
     UserRole role;
     UserStatus status;
     boolean active;
-    LocalDateTime lockedUntil;
     LocalDateTime createdAt;
 
     public static UserResponse from(UserEntity user) {
         return UserResponse.builder()
                 .id(user.getId())
+                .keycloakUserId(user.getKeycloakUserId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
@@ -34,7 +35,6 @@ public class UserResponse {
                 .role(user.getRole())
                 .status(user.getStatus())
                 .active(user.isActive())
-                .lockedUntil(user.getLockedUntil())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

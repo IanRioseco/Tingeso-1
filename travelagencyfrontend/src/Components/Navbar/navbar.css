@@ -1,0 +1,129 @@
+/* src/components/Navbar/Navbar.css */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 260px;
+  height: 100vh;
+  background: var(--color-white);
+  border-right: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  box-sizing: border-box;
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  margin-bottom: var(--space-4);
+}
+
+.sidebar-brand {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sidebar-links a {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-gray-600);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+.sidebar-links a:hover {
+  color: var(--color-primary);
+  background: var(--color-gray-100);
+}
+
+.sidebar-section {
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-1);
+  padding: 0 var(--space-2);
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sidebar-auth {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.sidebar-user {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sidebar-user span {
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+}
+
+.sidebar-auth-buttons {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 130;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-gray-800);
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0;
+  text-align: center;
+  appearance: none;
+  cursor: pointer;
+  transition: left 0.2s ease;
+}
+
+.sidebar-toggle.open {
+  left: 215px;
+}
+
+.sidebar-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 105;
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}

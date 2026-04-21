@@ -28,8 +28,9 @@ public class UserEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
-    private String passwordHash;
+    // Referencia al `sub` del usuario en Keycloak (fuente de verdad para identidad/auth).
+    @Column(name = "keycloak_user_id", unique = true)
+    private String keycloakUserId;
 
     @Column(name = "phone")
     private String phone;
@@ -51,12 +52,6 @@ public class UserEntity {
     @Column(nullable = false)
     private boolean active = true;
 
-    @Column(name = "failed_attempts", nullable = false)
-    private int failedAttempts;
-
-    @Column(name = "locked_until")
-    private LocalDateTime lockedUntil;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -69,7 +64,6 @@ public class UserEntity {
         if (this.role == null) {
             this.role = UserRole.CLIENT;
         }
-        this.failedAttempts = 0;
         this.active = this.status == UserStatus.ACTIVE;
     }
 }

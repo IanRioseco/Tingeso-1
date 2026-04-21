@@ -7,57 +7,17 @@ import com.example.TravelAgency.Repository.UserRepository;
 import com.example.TravelAgency.enums.UserRole;
 import com.example.TravelAgency.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final int LOCK_MINUTES = 30;
-
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
-
-    public UserEntity register(String fullName, String email, String password, String phone,
-                               String documentId, String nationality) {
-        if (fullName == null || fullName.isBlank()) {
-            throw new BusinessException("El nombre completo es obligatorio");
-        }
-        if (email == null || !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
-            throw new BusinessException("Formato de correo invalido");
-        }
-        if (password == null || password.length() < 8) {
-            throw new BusinessException("La contrasena debe tener al menos 8 caracteres");
-        }
-        if (documentId == null || documentId.isBlank()) {
-            throw new BusinessException("El documento de identidad es obligatorio");
-        }
-        if (nationality == null || nationality.isBlank()) {
-            throw new BusinessException("La nacionalidad es obligatoria");
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new BusinessException("El correo ya esta registrado");
-        }
-
-        UserEntity user = UserEntity.builder()
-                .fullName(fullName)
-                .email(email)
-                .passwordHash(passwordEncoder.encode(password))
-                .phone(phone)
-                .documentId(documentId)
-                .nationality(nationality)
-                .role(UserRole.CLIENT)
-                .status(UserStatus.ACTIVE)
-                .active(true)
-                .build();
-
-        return userRepository.save(user);
-    }
 
     public UserEntity findById(Long id) {
         return userRepository.findById(id)
@@ -67,6 +27,17 @@ public class UserService {
     public UserEntity findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+    }
+
+    // Sincroniza el usuario local con el sujeto autenticado en Keycloak.
+    public UserEntity getOrCreateFromJwt(Jwt jwt) {
+        String keycloakUserId = claimAsString(jwt, "sub");
+        if (keycloakUserId == null) {
+            throw new BusinessException("Token JWT invalido: no contiene claim sub");
+        }
+
+        return userRepository.findByKeycloakUserId(keycloakUserId)
+                .orElseGet(() -> createOrLinkLocalUser(jwt, keycloakUserId));
     }
 
     public List<UserEntity> findAll() {
@@ -100,37 +71,74 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void registerFailedAttempt(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
-            user.setFailedAttempts(user.getFailedAttempts() + 1);
-            if (user.getFailedAttempts() >= MAX_FAILED_ATTEMPTS) {
-                user.setStatus(UserStatus.LOCKED);
-                user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCK_MINUTES));
-            }
-            userRepository.save(user);
-        });
-    }
+    private UserEntity createOrLinkLocalUser(Jwt jwt, String keycloakUserId) {
+        String preferredUsername = claimAsString(jwt, "preferred_username");
+        String fullName = claimAsString(jwt, "name");
+        String email = claimAsString(jwt, "email");
 
-    public void resetFailedAttempts(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
-            user.setFailedAttempts(0);
-            user.setLockedUntil(null);
-            if (user.getStatus() == UserStatus.LOCKED) {
-                user.setStatus(UserStatus.ACTIVE);
-                user.setActive(true);
-            }
-            userRepository.save(user);
-        });
-    }
-
-    public boolean isAccountActive(UserEntity user) {
-        if (user.getStatus() == UserStatus.LOCKED) {
-            if (user.getLockedUntil() != null && LocalDateTime.now().isAfter(user.getLockedUntil())) {
-                resetFailedAttempts(user.getEmail());
-                return true;
-            }
-            return false;
+        if (fullName == null) {
+            fullName = preferredUsername != null ? preferredUsername : "Usuario";
         }
-        return user.getStatus() == UserStatus.ACTIVE;
+
+        if (email == null) {
+            String localPart = preferredUsername != null ? preferredUsername : keycloakUserId;
+            email = (localPart + "@local.keycloak").toLowerCase(Locale.ROOT);
+        } else {
+            email = email.toLowerCase(Locale.ROOT);
+        }
+
+        UserEntity existingByEmail = userRepository.findByEmail(email).orElse(null);
+        if (existingByEmail != null) {
+            if (existingByEmail.getKeycloakUserId() != null
+                    && !existingByEmail.getKeycloakUserId().equals(keycloakUserId)) {
+                throw new BusinessException("El correo ya esta vinculado a otro usuario de Keycloak");
+            }
+
+            existingByEmail.setKeycloakUserId(keycloakUserId);
+            if (existingByEmail.getFullName() == null || existingByEmail.getFullName().isBlank()) {
+                existingByEmail.setFullName(fullName);
+            }
+            return userRepository.save(existingByEmail);
+        }
+
+        UserEntity user = UserEntity.builder()
+                .keycloakUserId(keycloakUserId)
+                .fullName(fullName)
+                .email(email)
+                .phone(null)
+                .documentId(buildPendingDocumentId(keycloakUserId))
+                .nationality("PENDING")
+                .role(UserRole.CLIENT)
+                .status(UserStatus.ACTIVE)
+                .active(true)
+                .build();
+
+        return userRepository.save(user);
+    }
+
+    private String buildPendingDocumentId(String keycloakUserId) {
+        String normalized = keycloakUserId.replaceAll("[^a-zA-Z0-9]", "");
+        if (normalized.isBlank()) {
+            normalized = "USER";
+        }
+
+        String base = "PENDING-" + normalized.substring(0, Math.min(normalized.length(), 18));
+        String candidate = base;
+        int suffix = 1;
+
+        while (userRepository.existsByDocumentId(candidate)) {
+            candidate = base + "-" + suffix;
+            suffix++;
+        }
+
+        return candidate;
+    }
+
+    private String claimAsString(Jwt jwt, String claim) {
+        Object value = jwt.getClaims().get(claim);
+        if (value instanceof String text && !text.isBlank()) {
+            return text.trim();
+        }
+        return null;
     }
 }

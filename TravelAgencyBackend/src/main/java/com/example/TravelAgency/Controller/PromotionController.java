@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ public class PromotionController {
     private final AccessControlService accessControlService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PromotionResponse>> findAll(@RequestHeader("X-User-Id") Long userId) {
         accessControlService.requireAdmin(userId);
         return ResponseEntity.ok(
@@ -45,6 +47,7 @@ public class PromotionController {
     }
 
     @PostMapping("/calculate")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<PromotionCalculationResponse> calculate(
             @Valid @RequestBody PromotionCalculationRequest request) {
         UserEntity user = userService.findById(request.getUserId());
@@ -58,6 +61,7 @@ public class PromotionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PromotionResponse> create(@RequestHeader("X-User-Id") Long userId,
                                                     @Valid @RequestBody PromotionRequest request) {
         accessControlService.requireAdmin(userId);
@@ -73,6 +77,7 @@ public class PromotionController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PromotionResponse> update(@RequestHeader("X-User-Id") Long userId,
                                                     @PathVariable Long id,
                                                     @Valid @RequestBody PromotionRequest request) {
@@ -88,6 +93,7 @@ public class PromotionController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PromotionResponse> changeStatus(@RequestHeader("X-User-Id") Long userId,
                                                           @PathVariable Long id,
                                                           @RequestParam boolean active) {

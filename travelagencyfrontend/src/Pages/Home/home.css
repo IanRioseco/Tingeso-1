@@ -1,0 +1,25 @@
+/* src/pages/Home/Home.css */
+.home-hero {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1e40af 100%);
+  color: var(--color-white);
+  padding: var(--space-16) var(--space-4);
+  text-align: center;
+}
+
+.home-hero-content { max-width: 600px; margin: 0 auto; }
+.home-hero h1 { font-size: var(--font-size-3xl); margin-bottom: var(--space-4); }
+.home-hero p { font-size: var(--font-size-lg); margin-bottom: var(--space-8); opacity: 0.9; }
+
+.btn-lg { padding: var(--space-3) var(--space-8); font-size: var(--font-size-lg); }
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-8);
+  padding: var(--space-16) var(--space-4);
+  text-align: center;
+}
+
+.home-feature-icon { font-size: 2.5rem; display: block; margin-bottom: var(--space-3); }
+.home-feature h3 { margin-bottom: var(--space-2); color: var(--color-gray-800); }
+.home-feature p { color: var(--color-gray-600); font-size: var(--font-size-sm); }
