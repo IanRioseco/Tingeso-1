@@ -7,10 +7,11 @@ import PrivateRoute from './Components/ProtectedRoute/PrivateRoute.jsx';
 import LoginPage from './Pages/Login/login.jsx';
 import RegisterPage from './Pages/Register/register.jsx';
 import PackagesPage from './Pages/Packages/package.jsx';
+import PackageDetailPage from './Pages/PackageDetail/packagedetail.jsx';
+import ProfilePage from './Pages/Profile/profile.jsx';
 import HomePage from './Pages/Home/home.jsx';
 
 const MyBookingsPage = () => <h2>Mis reservas</h2>;
-const ProfilePage = () => <h2>Perfil</h2>;
 const AdminDashboardPage = () => <h2>Panel admin</h2>;
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/packages" element={<PackagesPage />} />
+          <Route path="/packages/:id" element={<PackageDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 

@@ -53,6 +53,10 @@ export function Navbar({ onSidebarStateChange }) {
         <ul className="sidebar-links">
           <li><Link to="/packages" onClick={closeSidebar}>Packages</Link></li>
 
+          {authenticated && (
+            <li><Link to="/profile" onClick={closeSidebar}>My Profile</Link></li>
+          )}
+
           {authenticated && !isAdmin() && (
             <li><Link to="/my-bookings" onClick={closeSidebar}>My Bookings</Link></li>
           )}

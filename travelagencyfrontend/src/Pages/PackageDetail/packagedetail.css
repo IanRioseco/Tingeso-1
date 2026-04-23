@@ -1,0 +1,29 @@
+.package-detail-card {
+	background: #ffffff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	padding: 1.5rem;
+	box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+	display: grid;
+	gap: 0.65rem;
+}
+
+.package-detail-card h1 {
+	margin: 0 0 0.35rem;
+}
+
+.package-detail-line {
+	font-size: 1.05rem;
+	margin: 0;
+}
+
+.package-detail-description {
+	margin: 0.35rem 0 0.75rem;
+	line-height: 1.45;
+	color: #1f2937;
+}
+
+.package-detail-icon {
+	margin-right: 0.5rem;
+    color: #84fafa;
+}

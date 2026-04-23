@@ -4,6 +4,8 @@ import api from './http-common';
 // Encapsula endpoints de gestión de usuarios.
 const userService = {
   register: (data) => api.post('/users/register', data),
+  me: () => api.get('/users/me'),
+  updateMe: (data) => api.put('/users/me', data),
   getById: (id) => api.get(`/users/${id}`),
   getAll: () => api.get('/users'),
   update: (id, data) => api.put(`/users/${id}`, data),

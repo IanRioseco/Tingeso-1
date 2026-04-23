@@ -1,5 +1,11 @@
 // src/pages/Home/Home.jsx
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faEarthAmerica,
+  faCreditCard,
+  faCalendarAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import './home.css';
 
 export default function Home() {
@@ -7,6 +13,7 @@ export default function Home() {
 
   return (
     <div className="home">
+      {/* contenedor para el hero de la aplicación */}
       <section className="home-hero">
         <div className="home-hero-content">
           <h1>Discover Your Next Adventure</h1>
@@ -17,19 +24,23 @@ export default function Home() {
         </div>
       </section>
 
+      {/* contenedor para las funcionalidades principales de la aplicación */}
       <section className="home-features container">
-        <div className="home-feature">
-          <span className="home-feature-icon">🌍</span>
+        {/* div para la funcionalidad de destinos nacionales e internacionales */}
+        <div className="home-feature-item">
+          <span><FontAwesomeIcon icon={faEarthAmerica} className='home-feature-icon'/></span>
           <h3>National & International</h3>
           <p>Packages to destinations across Chile and the world.</p>
         </div>
-        <div className="home-feature">
-          <span className="home-feature-icon">💳</span>
+        {/* div para la funcionalidad de pagos seguros */}
+        <div className="home-feature-item">
+          <span><FontAwesomeIcon icon={faCreditCard} className='home-feature-icon'/></span>
           <h3>Secure Payments</h3>
           <p>Safe and simple online payment process.</p>
         </div>
-        <div className="home-feature">
-          <span className="home-feature-icon">📋</span>
+        {/* div para la funcionalidad de reserva de paquetes */}
+        <div className="home-feature-item">
+          <span><FontAwesomeIcon icon={faCalendarAlt} className='home-feature-icon'/></span>
           <h3>Easy Booking</h3>
           <p>Reserve your trip in minutes from anywhere.</p>
         </div>

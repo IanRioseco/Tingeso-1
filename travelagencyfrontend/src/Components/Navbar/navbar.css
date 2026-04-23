@@ -1,4 +1,6 @@
 /* src/components/Navbar/Navbar.css */
+
+/* estilos para la barra lateral del navbar */
 .sidebar {
   position: fixed;
   left: 0;
@@ -17,14 +19,17 @@
   transition: transform 0.2s ease;
 }
 
+/* cuando la barra lateral está abierta, se muestra en su posición normal */
 .sidebar.open {
   transform: translateX(0);
 }
 
+/* estilos para el contenido de la barra lateral */
 .sidebar-header {
   margin-bottom: var(--space-4);
 }
 
+/* estilos para el logo de la barra lateral */
 .sidebar-brand {
   font-size: var(--font-size-xl);
   font-weight: 700;
@@ -32,6 +37,7 @@
   text-decoration: none;
 }
 
+/* estilos para los enlaces de la barra lateral */
 .sidebar-links {
   list-style: none;
   padding: 0;
@@ -40,6 +46,7 @@
   gap: var(--space-2);
 }
 
+/* estilos para cada enlace de la barra lateral */
 .sidebar-links a {
   display: block;
   padding: var(--space-2) var(--space-3);
@@ -49,11 +56,13 @@
   font-weight: 600;
 }
 
+/* estilos para el enlace activo de la barra lateral */
 .sidebar-links a:hover {
   color: var(--color-primary);
   background: var(--color-gray-100);
 }
 
+/* estilos para las secciones de la barra lateral */
 .sidebar-section {
   margin-top: var(--space-3);
   margin-bottom: var(--space-1);
@@ -64,27 +73,32 @@
   text-transform: uppercase;
 }
 
+/* estilos para el botón de cerrar la barra lateral */
 .sidebar-auth {
   margin-top: auto;
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-gray-200);
 }
 
+/* estilos para el usuario autenticado en la barra lateral */
 .sidebar-user {
   display: grid;
   gap: var(--space-2);
 }
 
+/* estilos para el nombre del usuario autenticado en la barra lateral */
 .sidebar-user span {
   color: var(--color-gray-600);
   font-size: var(--font-size-sm);
 }
 
+/* estilos para el botón de inicio de sesión en la barra lateral */
 .sidebar-auth-buttons {
   display: grid;
   gap: var(--space-2);
 }
 
+/* estilos para el botón de inicio de sesión en la barra lateral */
 .sidebar-toggle {
   display: inline-flex;
   align-items: center;
@@ -108,10 +122,12 @@
   transition: left 0.2s ease;
 }
 
+/* cuando la barra lateral está abierta, se muestra el botón de cerrar la barra lateral */
 .sidebar-toggle.open {
   left: 215px;
 }
 
+/* estilos para la superposición de la barra lateral */
 .sidebar-overlay {
   display: block;
   position: fixed;
@@ -123,6 +139,7 @@
   z-index: 105;
 }
 
+/* cuando la barra lateral está abierta, se muestra la superposición de la barra lateral */
 .sidebar-overlay.open {
   opacity: 1;
   pointer-events: auto;
