@@ -7,10 +7,7 @@ import lombok.Data;
 @Data
 public class BookingRequest {
 
-    @NotNull(message = "El id del usuario es obligatorio")
-    private Long userId;
-
-    @NotNull(message = "El id del paquete es obligatorio")
+    @NotNull(message = "El paquete es obligatorio")
     private Long packageId;
 
     @Min(value = 1, message = "La cantidad de pasajeros debe ser mayor a 0")

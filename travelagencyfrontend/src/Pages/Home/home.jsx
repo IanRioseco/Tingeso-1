@@ -16,10 +16,10 @@ export default function Home() {
       {/* contenedor para el hero de la aplicación */}
       <section className="home-hero">
         <div className="home-hero-content">
-          <h1>Discover Your Next Adventure</h1>
-          <p>Explore our curated travel packages to destinations around the world.</p>
+          <h1>Viaja sin Fronteras</h1>
+          <p>Explora nuestros paquetes de viaje curados a destinos alrededor del mundo.</p>
           <button className="btn btn-primary btn-lg" onClick={() => navigate('/packages')}>
-            Browse Packages
+            Explorar Paquetes
           </button>
         </div>
       </section>
@@ -29,20 +29,20 @@ export default function Home() {
         {/* div para la funcionalidad de destinos nacionales e internacionales */}
         <div className="home-feature-item">
           <span><FontAwesomeIcon icon={faEarthAmerica} className='home-feature-icon'/></span>
-          <h3>National & International</h3>
-          <p>Packages to destinations across Chile and the world.</p>
+          <h3>Nacional e Internacional</h3>
+          <p>Paquetes a destinos de Chile y el mundo.</p>
         </div>
         {/* div para la funcionalidad de pagos seguros */}
         <div className="home-feature-item">
           <span><FontAwesomeIcon icon={faCreditCard} className='home-feature-icon'/></span>
-          <h3>Secure Payments</h3>
-          <p>Safe and simple online payment process.</p>
+          <h3>Pagos Seguros</h3>
+          <p>Proceso de pago en línea seguro y sencillo.</p>
         </div>
         {/* div para la funcionalidad de reserva de paquetes */}
         <div className="home-feature-item">
           <span><FontAwesomeIcon icon={faCalendarAlt} className='home-feature-icon'/></span>
-          <h3>Easy Booking</h3>
-          <p>Reserve your trip in minutes from anywhere.</p>
+          <h3>Reserva Fácil</h3>
+          <p>Reserva tu viaje en minutos desde cualquier lugar.</p>
         </div>
       </section>
     </div>

@@ -63,6 +63,11 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
     // Reservas de la misma sesion (para descuento multi-paquete)
     List<BookingEntity> findBySessionId(String sessionId);
 
+    // Verifica si el usuario ya tiene una reserva activa para el mismo paquete.
+    boolean existsByUserIdAndPackageEntityIdAndBookingStatusIn(Long userId,
+                                                              Long packageEntityId,
+                                                              List<BookingStatus> bookingStatuses);
+
 
     // Reservas pendientes o confirmadas del usuario creadas desde {@code since} (compra multiple en periodo).
 

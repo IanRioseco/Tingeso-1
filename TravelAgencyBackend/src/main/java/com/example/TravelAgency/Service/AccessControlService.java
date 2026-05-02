@@ -14,10 +14,8 @@ public class AccessControlService {
     private final UserService userService;
 
     public UserEntity requireActiveUser(Long userId) {
-        // Nota: en este proyecto la “identidad” del usuario viaja por el header `X-User-Id`.
-        // Aun cuando ya exista autenticación por JWT (Keycloak), se mantiene esta validación
-        // para asegurar que el recurso consultado pertenece al usuario “actor” o que el actor
-        // tenga permisos de administrador.
+        // La identidad del actor se obtiene desde JWT en los controladores y
+        // aqui se centraliza la validacion del estado activo del usuario local.
         UserEntity user = userService.findById(userId);
         if (!user.isActive() || user.getStatus() != UserStatus.ACTIVE) {
             throw new BusinessException("La cuenta del usuario no esta activa");

@@ -2,14 +2,16 @@ package com.example.TravelAgency.Controller;
 
 import com.example.TravelAgency.Service.AccessControlService;
 import com.example.TravelAgency.Service.ReportService;
+import com.example.TravelAgency.Service.UserService;
 import com.example.TravelAgency.dto.response.PackageRankingItemResponse;
 import com.example.TravelAgency.dto.response.SalesReportItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +31,7 @@ public class ReportController {
 
     private final ReportService reportService;
     private final AccessControlService accessControlService;
+    private final UserService userService;
 
     /**
     Reporte de ventas por periodo para administradores.
@@ -36,9 +39,10 @@ public class ReportController {
      */
     @GetMapping("/sales")
     public ResponseEntity<List<SalesReportItemResponse>> sales(
-            @RequestHeader("X-User-Id") Long userId,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        Long userId = userService.getOrCreateFromJwt(jwt).getId();
         accessControlService.requireAdmin(userId);
         return ResponseEntity.ok(reportService.salesByPeriod(from, to));
     }
@@ -49,9 +53,10 @@ public class ReportController {
      */
     @GetMapping("/packages-ranking")
     public ResponseEntity<List<PackageRankingItemResponse>> packagesRanking(
-            @RequestHeader("X-User-Id") Long userId,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        Long userId = userService.getOrCreateFromJwt(jwt).getId();
         accessControlService.requireAdmin(userId);
         return ResponseEntity.ok(reportService.rankingPackagesByPeriod(from, to));
     }

@@ -2,6 +2,8 @@
 import api from './http-common';
 
 // Encapsula endpoints de gestión de usuarios.
+// Los usuarios se mantienen en Keycloak 
+// y se sincronizan con el sistema.
 const userService = {
   register: (data) => api.post('/users/register', data),
   me: () => api.get('/users/me'),

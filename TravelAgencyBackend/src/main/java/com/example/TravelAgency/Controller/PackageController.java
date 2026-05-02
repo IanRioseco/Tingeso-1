@@ -12,6 +12,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -35,8 +37,7 @@ public class PackageController {
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PackageResponse>> findAllForAdmin(
-            @RequestHeader("X-User-Id") Long userId) {
-        accessControlService.requireAdmin(userId);
+            @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.ok(packageService.findAll().stream().map(PackageResponse::from).toList());
     }
 
@@ -81,17 +82,15 @@ public class PackageController {
 
     @GetMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PackageResponse> findByIdForAdmin(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<PackageResponse> findByIdForAdmin(@AuthenticationPrincipal Jwt jwt,
                                                             @PathVariable Long id) {
-        accessControlService.requireAdmin(userId);
         return ResponseEntity.ok(PackageResponse.from(packageService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PackageResponse> create(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<PackageResponse> create(@AuthenticationPrincipal Jwt jwt,
                                                   @Valid @RequestBody PackageRequest req) {
-        accessControlService.requireAdmin(userId);
         PackageEntity pkg = PackageEntity.builder()
                 .name(req.getName())
                 .destination(req.getDestination())
@@ -112,42 +111,38 @@ public class PackageController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PackageResponse> update(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<PackageResponse> update(@AuthenticationPrincipal Jwt jwt,
                                                   @PathVariable Long id,
                                                   @Valid @RequestBody PackageRequest req) {
-        accessControlService.requireAdmin(userId);
-        PackageEntity updated = PackageEntity.builder()
-                .name(req.getName())
-                .destination(req.getDestination())
-                .description(req.getDescription())
-                .startDate(req.getStartDate())
-                .endDate(req.getEndDate())
-                .price(req.getPrice())
-                .totalSlots(req.getTotalSlots())
-                .travelType(req.getTravelType())
-                .season(req.getSeason())
-                .servicesIncluded(req.getServicesIncluded())
-                .restrictions(req.getRestrictions())
-                .conditions(req.getConditions())
-                .build();
-        return ResponseEntity.ok(PackageResponse.from(packageService.update(id, updated)));
+        PackageEntity existing = packageService.findById(id);
+        existing.setName(req.getName());
+        existing.setDestination(req.getDestination());
+        existing.setDescription(req.getDescription());
+        existing.setStartDate(req.getStartDate());
+        existing.setEndDate(req.getEndDate());
+        existing.setPrice(req.getPrice());
+        existing.setTotalSlots(req.getTotalSlots());
+        existing.setTravelType(req.getTravelType());
+        existing.setSeason(req.getSeason());
+        existing.setServicesIncluded(req.getServicesIncluded());
+        existing.setRestrictions(req.getRestrictions());
+        existing.setConditions(req.getConditions());
+        return ResponseEntity.ok(PackageResponse.from(packageService.update(id, existing)));
     }
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> changeStatus(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<Map<String, String>> changeStatus(@AuthenticationPrincipal Jwt jwt,
                                                             @PathVariable Long id,
                                                             @RequestParam PackageStatus status) {
-        accessControlService.requireAdmin(userId);
         packageService.changeStatus(id, status);
         return ResponseEntity.ok(Map.of("message", "Estado actualizado correctamente"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> delete(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<Map<String, String>> delete(@AuthenticationPrincipal Jwt jwt,
                                                       @PathVariable Long id) {
-        accessControlService.requireAdmin(userId);
         packageService.delete(id);
         return ResponseEntity.ok(Map.of("message", "Paquete eliminado correctamente"));
     }

@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                    // El login/bloqueo de cuenta se centraliza en Keycloak.
+                    // El login/registro/bloqueo de cuenta se centraliza en Keycloak.
                     // Solo se mantiene público el catálogo visible.
                         .requestMatchers("/api/packages/**").permitAll()
                         .requestMatchers("/api/promotions/active").permitAll()

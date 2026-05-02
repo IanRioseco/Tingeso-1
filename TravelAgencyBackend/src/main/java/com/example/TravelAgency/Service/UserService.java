@@ -30,6 +30,8 @@ public class UserService {
     }
 
     // Sincroniza el usuario local con el sujeto autenticado en Keycloak.
+    // Cuando un usuario inicia sesión, se extrae su información del JWT (proporcionada por Keycloak)
+    // y se crea o actualiza en la BD local.
     public UserEntity getOrCreateFromJwt(Jwt jwt) {
         String keycloakUserId = claimAsString(jwt, "sub");
         if (keycloakUserId == null) {

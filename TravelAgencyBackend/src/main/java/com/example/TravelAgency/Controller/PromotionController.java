@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -30,8 +32,9 @@ public class PromotionController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PromotionResponse>> findAll(@RequestHeader("X-User-Id") Long userId) {
-        accessControlService.requireAdmin(userId);
+    public ResponseEntity<List<PromotionResponse>> findAll(@AuthenticationPrincipal Jwt jwt) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        accessControlService.requireAdmin(currentUser.getId());
         return ResponseEntity.ok(
                 promotionService.findAll().stream().map(PromotionResponse::from).toList()
         );
@@ -49,8 +52,10 @@ public class PromotionController {
     @PostMapping("/calculate")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<PromotionCalculationResponse> calculate(
-            @Valid @RequestBody PromotionCalculationRequest request) {
-        UserEntity user = userService.findById(request.getUserId());
+            @Valid @RequestBody PromotionCalculationRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        UserEntity user = accessControlService.requireActiveUser(currentUser.getId());
         PromotionService.DiscountResult result = promotionService.calculate(
                 request.getBaseAmount(),
                 request.getPassengers(),
@@ -62,9 +67,10 @@ public class PromotionController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PromotionResponse> create(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<PromotionResponse> create(@AuthenticationPrincipal Jwt jwt,
                                                     @Valid @RequestBody PromotionRequest request) {
-        accessControlService.requireAdmin(userId);
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        accessControlService.requireAdmin(currentUser.getId());
         PromotionEntity promotion = PromotionEntity.builder()
                 .name(request.getName())
                 .discountPct(request.getDiscountPct())
@@ -78,10 +84,11 @@ public class PromotionController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PromotionResponse> update(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<PromotionResponse> update(@AuthenticationPrincipal Jwt jwt,
                                                     @PathVariable Long id,
                                                     @Valid @RequestBody PromotionRequest request) {
-        accessControlService.requireAdmin(userId);
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        accessControlService.requireAdmin(currentUser.getId());
         PromotionEntity updated = PromotionEntity.builder()
                 .name(request.getName())
                 .discountPct(request.getDiscountPct())
@@ -94,10 +101,11 @@ public class PromotionController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PromotionResponse> changeStatus(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<PromotionResponse> changeStatus(@AuthenticationPrincipal Jwt jwt,
                                                           @PathVariable Long id,
                                                           @RequestParam boolean active) {
-        accessControlService.requireAdmin(userId);
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        accessControlService.requireAdmin(currentUser.getId());
         return ResponseEntity.ok(PromotionResponse.from(promotionService.changeStatus(id, active)));
     }
 }

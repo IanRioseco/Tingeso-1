@@ -6,6 +6,7 @@ import com.example.TravelAgency.Exceptions.BusinessException;
 import com.example.TravelAgency.Service.AccessControlService;
 import com.example.TravelAgency.Service.BookingService;
 import com.example.TravelAgency.Service.PaymentService;
+import com.example.TravelAgency.Service.UserService;
 import com.example.TravelAgency.dto.request.BookingRequest;
 import com.example.TravelAgency.dto.response.BookingReceiptResponse;
 import com.example.TravelAgency.dto.response.BookingResponse;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,19 +36,17 @@ public class BookingController {
     private final BookingService bookingService;
     private final PaymentService paymentService;
     private final AccessControlService accessControlService;
+    private final UserService userService;
 
     /**
     Crea una nueva reserva para el usuario autenticado.
-    Valida que el identificador del usuario del request coincida
-    con el encabezado `X-User-Id` y delega la logica al servicio.
+    El usuario se resuelve desde el JWT para evitar confiar en datos enviados por el cliente.
      */
     @PostMapping
     public ResponseEntity<BookingResponse> create(@Valid @RequestBody BookingRequest req,
-                                                  @RequestHeader("X-User-Id") Long userId) {
-        if (!userId.equals(req.getUserId())) {
-            throw new BusinessException("El usuario autenticado no coincide con el usuario de la reserva");
-        }
-        UserEntity user = accessControlService.requireActiveUser(userId);
+                                                  @AuthenticationPrincipal Jwt jwt) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        UserEntity user = accessControlService.requireActiveUser(currentUser.getId());
         BookingEntity booking = bookingService.create(
                 user, req.getPackageId(), req.getPassengers(), req.getSessionId());
         return ResponseEntity.status(HttpStatus.CREATED).body(BookingResponse.from(booking));
@@ -56,10 +57,11 @@ public class BookingController {
     Solo el dueno de la reserva o un administrador pueden acceder.
      */
     @GetMapping("/{id:[0-9]+}")
-    public ResponseEntity<BookingResponse> findById(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<BookingResponse> findById(@AuthenticationPrincipal Jwt jwt,
                                                     @PathVariable Long id) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
         BookingEntity booking = bookingService.findById(id);
-        accessControlService.requireSameUserOrAdmin(userId, booking.getUser().getId());
+        accessControlService.requireSameUserOrAdmin(currentUser.getId(), booking.getUser().getId());
         return ResponseEntity.ok(BookingResponse.from(booking));
     }
 
@@ -67,8 +69,9 @@ public class BookingController {
 
     @GetMapping("/my")
     public ResponseEntity<List<BookingResponse>> myBookings(
-            @RequestHeader("X-User-Id") Long userId) {
-        UserEntity user = accessControlService.requireActiveUser(userId);
+            @AuthenticationPrincipal Jwt jwt) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        UserEntity user = accessControlService.requireActiveUser(currentUser.getId());
         return ResponseEntity.ok(
                 bookingService.findByUser(user).stream().map(BookingResponse::from).toList()
         );
@@ -80,8 +83,9 @@ public class BookingController {
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<BookingResponse>> findAll(@RequestHeader("X-User-Id") Long userId) {
-        accessControlService.requireAdmin(userId);
+    public ResponseEntity<List<BookingResponse>> findAll(@AuthenticationPrincipal Jwt jwt) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
+        accessControlService.requireAdmin(currentUser.getId());
         return ResponseEntity.ok(
                 bookingService.findAll().stream().map(BookingResponse::from).toList()
         );
@@ -91,10 +95,11 @@ public class BookingController {
      // Cancela una reserva pendiente del usuario o de un tercero si es administrador.
 
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Map<String, String>> cancel(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<Map<String, String>> cancel(@AuthenticationPrincipal Jwt jwt,
                                                       @PathVariable Long id) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
         BookingEntity booking = bookingService.findById(id);
-        accessControlService.requireSameUserOrAdmin(userId, booking.getUser().getId());
+        accessControlService.requireSameUserOrAdmin(currentUser.getId(), booking.getUser().getId());
         bookingService.cancel(id);
         return ResponseEntity.ok(Map.of("message", "Reserva cancelada correctamente"));
     }
@@ -104,10 +109,11 @@ public class BookingController {
     incluyendo los datos de los pagos asociados.
      */
     @GetMapping("/{id}/receipt")
-    public ResponseEntity<BookingReceiptResponse> receipt(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<BookingReceiptResponse> receipt(@AuthenticationPrincipal Jwt jwt,
                                                           @PathVariable Long id) {
+        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
         BookingEntity booking = bookingService.findById(id);
-        accessControlService.requireSameUserOrAdmin(userId, booking.getUser().getId());
+        accessControlService.requireSameUserOrAdmin(currentUser.getId(), booking.getUser().getId());
         if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
             throw new BusinessException(
                     "El comprobante solo puede emitirse para reservas confirmadas con pago registrado");

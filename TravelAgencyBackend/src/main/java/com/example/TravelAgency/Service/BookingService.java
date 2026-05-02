@@ -40,6 +40,15 @@ public class BookingService {
             throw new BusinessException("La cantidad de pasajeros debe ser mayor a 0");
         }
 
+        boolean alreadyHasActiveBooking = bookingRepository.existsByUserIdAndPackageEntityIdAndBookingStatusIn(
+                user.getId(),
+                packageId,
+                List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED)
+        );
+        if (alreadyHasActiveBooking) {
+            throw new BusinessException("No es posible crear otra reserva para este paquete porque ya tienes una reserva activa (pendiente o confirmada). Para reservarlo de nuevo, cancela la actual o espera a que expire.");
+        }
+
         PackageEntity packageEntity = packageService.findById(packageId);
 
         // Se bloquean paquetes que ya no aceptan nuevas reservas.

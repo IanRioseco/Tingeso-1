@@ -1,0 +1,138 @@
+
+.my-bookings {
+    padding: var(--space-6) var(--space-4);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.my-bookings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.my-bookings-header h1 {
+    font-size: var(--font-size-3xl);
+    color: var(--color-gray-900);
+    margin: 0;
+}
+
+.my-bookings-subtitle {
+    margin: var(--space-1) 0 0 0;
+    color: var(--color-gray-600);
+}
+
+.my-bookings-list {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    align-items: stretch;
+}
+
+/* El resto de las clases redundantes fueron movidas a bookingCard.css */
+.my-bookings-item-details {
+    background: var(--color-white);
+    display: grid;
+    gap: var(--space-4);
+}
+
+.my-bookings-item-details-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.my-bookings-item-details-line strong {
+    color: var(--color-gray-800);
+}
+
+.my-bookings-item-details-line .btn {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+}
+
+.my-bookings-item-details-line .btn.btn-secondary {
+    background: var(--color-gray-100);
+    color: var(--color-gray-800);
+}
+
+.my-bookings-item-details-line .btn.btn-secondary:hover {
+    background: var(--color-gray-200);
+}
+
+.my-bookings-item-details-line .btn.btn-danger {
+    background: var(--color-danger);
+    color: var(--color-white);
+}
+
+.my-bookings-item-details-line .btn.btn-danger:hover {
+    background: var(--color-danger-dark);
+}
+
+.my-bookings-item-receipt {
+    background: var(--color-light-bg);
+    border: 1px solid #e9d5ff;
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    display: grid;
+    gap: var(--space-2);
+}
+
+.my-bookings-item-receipt h4 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-primary);
+}
+
+.my-bookings-item-receipt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    color: var(--color-gray-700);
+}
+
+.my-bookings-item-receipt-row.total {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-primary);
+    padding-top: var(--space-2);
+    border-top: 1px solid #e9d5ff;
+}
+
+.my-bookings-item-discount-detail {
+    margin: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    color: var(--color-gray-600);
+    font-size: var(--font-size-sm);
+}
+
+.my-bookings-item-notes ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--color-gray-700);
+    display: grid;
+    gap: 0.5rem;
+}
+
+.my-bookings-item-error {
+    color: #b91c1c;
+    font-weight: 600;
+    margin: 0;
+}
+
+.my-bookings-item-success {
+    color: #166534;
+    font-weight: 600;
+    margin: 0;
+}

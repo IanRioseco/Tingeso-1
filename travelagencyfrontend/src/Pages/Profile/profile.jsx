@@ -1,49 +1,48 @@
 import { useEffect, useMemo, useState } from 'react';
 import userService from '../../Services/UserService';
+import { formatDateTimeCL } from '../../Utils/dateFormat';
+import {
+	EMPTY_PROFILE_FORM,
+	formToProfilePayload,
+	isAccountActive,
+	profileToFormModel,
+	validateProfileForm,
+} from '../../Utils/profileForm';
 import './profile.css';
 
-const emptyForm = {
-	fullName: '',
-	phone: '',
-	documentId: '',
-	nationality: '',
-};
-
+// Función para la página de perfil de usuario
 function ProfilePage() {
 	const [profile, setProfile] = useState(null);
-	const [form, setForm] = useState(emptyForm);
+	const [form, setForm] = useState(EMPTY_PROFILE_FORM);
 	const [editing, setEditing] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
 
+    // Validación de la cuenta de usuario
 	const accountIsActive = useMemo(() => {
-		if (!profile) return true;
-		const status = String(profile.status || '').toUpperCase();
-		return Boolean(profile.active) && status === 'ACTIVE';
+		return isAccountActive(profile);
 	}, [profile]);
 
+    // Carga de la información de la cuenta de usuario
 	useEffect(() => {
 		let alive = true;
-
+        // Carga de la información de la cuenta de usuario
 		const loadProfile = async () => {
 			try {
 				setLoading(true);
 				setError('');
 				setSuccess('');
 
+                // Carga de la información de la cuenta de usuario
 				const response = await userService.me();
 				if (!alive) return;
 
+                // inicialización de los datos de la cuenta de usuario en el formulario
 				const data = response.data;
 				setProfile(data);
-				setForm({
-					fullName: data.fullName || '',
-					phone: data.phone || '',
-					documentId: data.documentId || '',
-					nationality: data.nationality || '',
-				});
+				setForm(profileToFormModel(data));
 			} catch {
 				if (alive) {
 					setError('No se pudo cargar tu perfil. Intenta nuevamente.');
@@ -54,60 +53,33 @@ function ProfilePage() {
 				}
 			}
 		};
-
 		loadProfile();
-
 		return () => {
 			alive = false;
 		};
 	}, []);
 
-	const validate = () => {
-		const trimmedName = form.fullName.trim();
-		if (!trimmedName) {
-			return 'El nombre completo es obligatorio.';
-		}
-		if (trimmedName.length < 3) {
-			return 'El nombre completo debe tener al menos 3 caracteres.';
-		}
-
-		const trimmedPhone = form.phone.trim();
-		if (trimmedPhone && !/^\+?[0-9\s()-]{7,20}$/.test(trimmedPhone)) {
-			return 'El telefono tiene un formato invalido.';
-		}
-
-		if (form.documentId.trim().length > 30) {
-			return 'El documento no puede superar 30 caracteres.';
-		}
-
-		if (form.nationality.trim().length > 60) {
-			return 'La nacionalidad no puede superar 60 caracteres.';
-		}
-
-		return '';
-	};
-
+    // Validación de los datos de la cuenta de usuario
+    // Actualización de los datos de la cuenta de usuario
 	const handleChange = (event) => {
 		const { name, value } = event.target;
 		setForm((prev) => ({ ...prev, [name]: value }));
 	};
 
+    // Cancelación de la edición de los datos de la cuenta de usuario
 	const handleCancel = () => {
 		if (!profile) return;
-		setForm({
-			fullName: profile.fullName || '',
-			phone: profile.phone || '',
-			documentId: profile.documentId || '',
-			nationality: profile.nationality || '',
-		});
+		setForm(profileToFormModel(profile));
 		setError('');
 		setSuccess('');
 		setEditing(false);
 	};
 
+    // Guarda de los datos de la cuenta de usuario
 	const handleSubmit = async (event) => {
 		event.preventDefault();
-		const validationError = validate();
+        // Validación de los datos de la cuenta de usuario
+		const validationError = validateProfileForm(form);
 		if (validationError) {
 			setError(validationError);
 			setSuccess('');
@@ -118,24 +90,14 @@ function ProfilePage() {
 			setSaving(true);
 			setError('');
 			setSuccess('');
-
-			const payload = {
-				fullName: form.fullName.trim(),
-				phone: form.phone.trim(),
-				documentId: form.documentId.trim(),
-				nationality: form.nationality.trim(),
-			};
-
+            // Datos de la cuenta de usuario a actualizar
+			const payload = formToProfilePayload(form);
+            // Actualización de la información de la cuenta de usuario
 			const response = await userService.updateMe(payload);
 			const updated = response.data;
 
 			setProfile(updated);
-			setForm({
-				fullName: updated.fullName || '',
-				phone: updated.phone || '',
-				documentId: updated.documentId || '',
-				nationality: updated.nationality || '',
-			});
+			setForm(profileToFormModel(updated));
 			setEditing(false);
 			setSuccess('Perfil actualizado correctamente.');
 		} catch {
@@ -155,11 +117,13 @@ function ProfilePage() {
 
 	return (
 		<section className="profile-page container">
+            {/* header de la página de perfil de usuario */}
 			<header className="profile-header">
 				<h1>Mi Perfil</h1>
 				<p>Gestiona tu informacion personal y revisa el estado de tu cuenta.</p>
 			</header>
 
+            {/* divs para las alertas de error y éxito */}
 			{error && <div className="profile-alert profile-alert-error">{error}</div>}
 			{success && <div className="profile-alert profile-alert-success">{success}</div>}
 
@@ -189,7 +153,7 @@ function ProfilePage() {
 							</div>
 							<div>
 								<span>Fecha de alta</span>
-								<strong>{profile.createdAt ? new Date(profile.createdAt).toLocaleString() : '-'}</strong>
+								<strong>{formatDateTimeCL(profile.createdAt)}</strong>
 							</div>
 						</div>
 
@@ -207,15 +171,12 @@ function ProfilePage() {
 							<h2>Datos personales</h2>
 							{!editing && (
 								<button 
-									type="button"
-									className="btn btn-primary"
-									onClick={() => {
-										setError('');
-										setSuccess('');
-										setEditing(true);
-									}}
-									disabled={!accountIsActive}
-								>
+                                    type="button" 
+                                    className="btn 
+                                    btn-primary" 
+                                    onClick={() => {setError(''); setSuccess(''); setEditing(true);}} 
+                                    disabled={!accountIsActive}
+                                    >
 									Editar
 								</button>
 							)}
@@ -226,31 +187,71 @@ function ProfilePage() {
                             {/* label para el campo de nombre completo */}
 							<label htmlFor="fullName">
 								Nombre completo *
-								<input id="fullName" name="fullName" type="text" value={form.fullName} onChange={handleChange} disabled={!editing || saving} maxLength={120} />
+								<input 
+                                    id="fullName" 
+                                    name="fullName" 
+                                    type="text" 
+                                    value={form.fullName} 
+                                    onChange={handleChange} 
+                                    disabled={!editing || saving} 
+                                    maxLength={120} 
+                                    />
 							</label>
                             {/* label para el campo de teléfono */}
 							<label htmlFor="phone">
 								Telefono
-								<input id="phone" name="phone" type="text" value={form.phone} onChange={handleChange} disabled={!editing || saving} maxLength={20} />   
+								<input 
+                                    id="phone" 
+                                    name="phone" 
+                                    type="text" value={form.phone} 
+                                    onChange={handleChange} 
+                                    disabled={!editing || saving} 
+                                    maxLength={20} 
+                                    />   
 							</label>
                             {/* label para el campo de la documento de identidad */}
 							<label htmlFor="documentId">
 								Documento de identidad
-								<input id="documentId" name="documentId" type="text" value={form.documentId} onChange={handleChange} disabled={!editing || saving} maxLength={30} />
+								<input 
+                                    id="documentId" 
+                                    name="documentId" 
+                                    type="text" 
+                                    value={form.documentId} 
+                                    onChange={handleChange} 
+                                    disabled={!editing || saving} 
+                                    maxLength={30} 
+                                    />
 							</label>
                             {/* label para el campo de la nacionalidad */}
 							<label htmlFor="nationality">
 								Nacionalidad
-								<input id="nationality" name="nationality" type="text" value={form.nationality} onChange={handleChange} disabled={!editing || saving} maxLength={60} />
+								<input 
+                                    id="nationality" 
+                                    name="nationality" 
+                                    type="text" value={form.nationality}   
+                                    onChange={handleChange} 
+                                    disabled={!editing || saving} maxLength={60} 
+                                    />
 							</label>
 
 							{editing && (
                                 {/* div para las acciones de guardar y cancelar */},
 								<div className="profile-actions">
-									<button type="submit" className="btn btn-primary" disabled={saving}>
+									<button 
+                                        type="submit" 
+                                        className="btn 
+                                        btn-primary" 
+                                        disabled={saving}
+                                        >
 										{saving ? 'Guardando...' : 'Guardar cambios'}
 									</button>
-									<button type="button" className="btn btn-secondary" onClick={handleCancel} disabled={saving}>
+									<button 
+                                        type="button" 
+                                        className="btn 
+                                        btn-secondary" 
+                                        onClick={handleCancel} 
+                                        disabled={saving}
+                                        >
 										Cancelar
 									</button>
 								</div>

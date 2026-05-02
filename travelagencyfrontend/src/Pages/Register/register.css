@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-  background: var(--color-gray-100);
+  background: var(--color-light-bg);
 }
 
 .register-card {
@@ -14,31 +14,37 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: var(--space-8);
+  text-align: center;
 }
 
 .register-card h2 {
   margin: 0;
-  color: var(--color-gray-800);
+  color: var(--color-primary);
+  font-size: var(--font-size-2xl);
 }
 
 .register-subtitle {
   margin: var(--space-2) 0 var(--space-6);
   color: var(--color-gray-600);
+  font-size: var(--font-size-base);
 }
 
 .register-hint {
   margin: 0 0 var(--space-4);
   color: var(--color-gray-600);
   font-size: var(--font-size-sm);
+  font-style: italic;
 }
 
 .register-btn {
   width: 100%;
   margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  font-size: var(--font-size-base);
 }
 
 .register-login {
-  margin: var(--space-4) 0 0;
+  margin: var(--space-6) 0 0;
   color: var(--color-gray-600);
   font-size: var(--font-size-sm);
 }
@@ -47,10 +53,20 @@
   color: var(--color-primary);
   font-weight: 600;
   text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.register-login a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
 }
 
 @media (max-width: 640px) {
   .register-card {
     padding: var(--space-6);
+  }
+
+  .register-card h2 {
+    font-size: var(--font-size-xl);
   }
 }

@@ -51,38 +51,39 @@ export function Navbar({ onSidebarStateChange }) {
 
         {/* Enlaces de navegación */}
         <ul className="sidebar-links">
-          <li><Link to="/packages" onClick={closeSidebar}>Packages</Link></li>
+          <li><Link to="/packages" onClick={closeSidebar}>Paquetes</Link></li>
 
           {authenticated && (
-            <li><Link to="/profile" onClick={closeSidebar}>My Profile</Link></li>
+            <li><Link to="/profile" onClick={closeSidebar}>Mi Perfil</Link></li>
           )}
 
           {authenticated && !isAdmin() && (
-            <li><Link to="/my-bookings" onClick={closeSidebar}>My Bookings</Link></li>
+            <li><Link to="/my-bookings" onClick={closeSidebar}>Mis Reservas</Link></li>
           )}
 
           {isAdmin() && (
             <>
-              <li className="sidebar-section">Admin</li>
-              <li><Link to="/admin" onClick={closeSidebar}>Dashboard</Link></li>
-              <li><Link to="/admin/packages" onClick={closeSidebar}>Packages</Link></li>
-              <li><Link to="/admin/users" onClick={closeSidebar}>Users</Link></li>
-              <li><Link to="/admin/reports" onClick={closeSidebar}>Reports</Link></li>
+              <li className="sidebar-section">Administrador</li>
+              <li><Link to="/admin" onClick={closeSidebar}>Panel de Control</Link></li>
+              <li><Link to="/Admin/ManagePackage" onClick={closeSidebar}>Paquetes</Link></li>
+              <li><Link to="/admin/users" onClick={closeSidebar}>Usuarios</Link></li>
+              <li><Link to="/Admin/ManagePromotions" onClick={closeSidebar}>Promociones</Link></li>
+              <li><Link to="/admin/reports" onClick={closeSidebar}>Reportes</Link></li>
             </>
           )}
         </ul>
 
-        
+        {/* Sección de autenticación en el sidebar */}
         <div className="sidebar-auth">
           {authenticated ? (
             <div className="sidebar-user">
-              <span>Hi, {userName.split(' ')[0]}</span>
-              <button className="btn btn-secondary" onClick={handleLogout}>Logout</button>
+              <span>Hola, {userName.split(' ')[0]}</span>
+              <button className="btn btn-secondary" onClick={handleLogout}>Cerrar sesión</button>
             </div>
           ) : (
             <div className="sidebar-auth-buttons">
-              <Link to="/login" className="btn btn-secondary" onClick={closeSidebar}>Login</Link>
-              <Link to="/register" className="btn btn-primary" onClick={closeSidebar}>Register</Link>
+              <Link to="/login" className="btn btn-secondary" onClick={closeSidebar}>Iniciar sesión</Link>
+              <Link to="/register" className="btn btn-primary" onClick={closeSidebar}>Registrarse</Link>
             </div>
           )}
         </div>

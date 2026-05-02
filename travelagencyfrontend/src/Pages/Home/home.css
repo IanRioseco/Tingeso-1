@@ -1,6 +1,6 @@
 /* src/pages/Home/Home.css */
 .home-hero {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   color: var(--color-white);
   padding: var(--space-16) var(--space-4);
   text-align: center;

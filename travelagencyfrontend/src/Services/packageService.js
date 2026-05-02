@@ -3,7 +3,7 @@ import api from './http-common';
 
 // Encapsula operaciones CRUD y búsqueda de paquetes turísticos.
 const packageService = {
-  getAll: () => api.get('/packages'),
+  getAll: () => api.get('/packages/admin'),
   getAvailable: () => api.get('/packages/available'),
   getById: (id) => api.get(`/packages/${id}`),
   search: (params) => api.get('/packages/search', { params }),

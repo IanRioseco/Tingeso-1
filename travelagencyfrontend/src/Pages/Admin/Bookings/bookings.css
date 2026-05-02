@@ -1,0 +1,105 @@
+.admin-bookings {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  padding-bottom: 1.5rem;
+}
+
+.admin-bookings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-bookings-kicker {
+  margin: 0 0 0.3rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.admin-bookings-header h1 {
+  margin: 0;
+}
+
+.admin-bookings-table-wrap {
+  overflow-x: auto;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.admin-bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-bookings-table th,
+.admin-bookings-table td {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-bookings-table thead {
+  background: #f8fafc;
+}
+
+.booking-status {
+  display: inline-flex;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.booking-status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.booking-status.confirmed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.booking-status.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.booking-status.expired {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.empty-row {
+  text-align: center;
+  color: #6b7280;
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+}
+
+.alert-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
+@media (max-width: 900px) {
+  .admin-bookings-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useKeycloak } from '@react-keycloak/web';
 import packageService from '../../Services/packageService';
+import { formatPesos } from '../../Utils/currency';
+import { getAvailableSlots } from '../../Utils/packageFilters';
 import './packagedetail.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -13,14 +15,12 @@ import {
     faUserFriends,
     faUser,
     faCalendarDays,
-
  } from '@fortawesome/free-solid-svg-icons';
-
 
 export default function PackageDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isLoggedIn } = useAuth();
+    const { keycloak } = useKeycloak();
     const [pkg, setPkg] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -58,7 +58,7 @@ export default function PackageDetail() {
 
     /* Función para bookear el paquete */
     const handleBook = () => {
-        if (isLoggedIn()) {
+        if (keycloak.authenticated) {
             navigate(`/booking/${pkg.id}`);
             return;
         }
@@ -120,7 +120,8 @@ export default function PackageDetail() {
                                     ))}
                             </ul>
                             
-                            <p><strong>Condiciones del paquete</strong>
+                            <div className="package-detail-section-block">
+                                <strong>Condiciones del paquete</strong>
                                 <ul>
                                     {pkg.conditions
                                     .split('.')
@@ -130,14 +131,14 @@ export default function PackageDetail() {
                                         <li key={index}>{condition}</li>
                                     ))}
                                 </ul>
-                            </p>
+                            </div>
                             {/* contenedor para el detalle de los metadatos del paquete */}
                             <div className='package-detail-grid-info-meta'>
 
                                 {/* div para el precio del paquete */}
                                 <div>
                                     <FontAwesomeIcon icon={faMoneyBillWave} className='package-detail-icon'/>
-                                    <strong>Precio:</strong> ${pkg.price} 
+                                    <strong>Precio:</strong> {formatPesos(pkg.price)} 
                                 </div>
                                 {/* div para la duración del paquete */}
                                 <div>
@@ -162,7 +163,7 @@ export default function PackageDetail() {
                                 {/* div para el número de cupos disponibles del paquete */}
                                 <div>
                                     <FontAwesomeIcon icon={faUserFriends} className='package-detail-icon'/>
-                                    <strong>Cupos disponibles:</strong> {pkg.availableSlots}
+                                    <strong>Cupos disponibles:</strong> {getAvailableSlots(pkg)}
                                 </div>
                             </div>
                             

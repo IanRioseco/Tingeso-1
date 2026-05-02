@@ -17,8 +17,5 @@ public class PromotionCalculationRequest {
     @Min(value = 1, message = "La cantidad de pasajeros debe ser mayor a 0")
     private int passengers;
 
-    @NotNull(message = "El id del usuario es obligatorio")
-    private Long userId;
-
     private String sessionId;
 }

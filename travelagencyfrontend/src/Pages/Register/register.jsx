@@ -18,9 +18,9 @@ export default function Register() {
   return (
     <div className="register-page">
       <div className="register-card">
-        <h2>Registro de usuarios</h2>
+        <h2>Registro de Usuarios</h2>
         <p className="register-subtitle">
-          El alta de cuenta, validación de credenciales e intentos fallidos se gestionan en Keycloak.
+          Crea tu cuenta en Travel Agency para acceder a todos nuestros servicios
         </p>
 
         {!initialized && (
@@ -28,7 +28,7 @@ export default function Register() {
         )}
 
         <button type="button" className="btn btn-primary register-btn" onClick={handleRegister}>
-          Registrarme en Keycloak
+          Registrarse
         </button>
 
         <p className="register-login">
