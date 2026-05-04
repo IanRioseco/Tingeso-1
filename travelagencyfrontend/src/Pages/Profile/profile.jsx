@@ -85,7 +85,7 @@ function ProfilePage() {
 			setSuccess('');
 			return;
 		}
-
+		// Datos de la cuenta de usuario a actualizar
 		try {
 			setSaving(true);
 			setError('');
@@ -95,7 +95,7 @@ function ProfilePage() {
             // Actualización de la información de la cuenta de usuario
 			const response = await userService.updateMe(payload);
 			const updated = response.data;
-
+			// Alerta de éxito y actualización de los datos de la cuenta de usuario en el estado y el formulario
 			setProfile(updated);
 			setForm(profileToFormModel(updated));
 			setEditing(false);

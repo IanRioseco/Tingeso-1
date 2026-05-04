@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import { formatPesos } from '../../Utils/currency';
 import { getAvailableSlots } from '../../Utils/packageFilters';
-import './PackageCard.css';
+import './packageCard.css';
 
 export default function PackageCard({ pkg }) {
   const navigate = useNavigate();

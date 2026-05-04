@@ -18,6 +18,8 @@ const initOptions = {
   // Evita bloqueos de arranque cuando Keycloak no responde o no hay SSO silencioso configurado.
   pkceMethod: 'S256',
   checkLoginIframe: false,
+  // Fuerza un redirect URI estable para evitar rechazos por rutas dinámicas.
+  redirectUri: `${window.location.origin}/`,
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

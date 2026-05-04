@@ -59,6 +59,7 @@ export default function BookingPage() {
         setCurrentUser(userResponse.data);
         setSessionId(getOrCreateSessionId(userResponse.data.id));
       } catch (err) {
+        // Si ocurre algún error, muestra un mensaje de error y finaliza la carga.
         if (active) {
           setError('No se pudo cargar la información necesaria para la reserva.');
         }
@@ -120,9 +121,12 @@ export default function BookingPage() {
       active = false;
     };
   }, [baseAmount, currentUser, passengers, pkg, sessionId]);
+
   // Cambia el número de pasajeros en la reserva.
   const handlePassengersChange = (event) => {
+    // Extrae el valor del número de pasajeros y lo establece en el estado.
     const value = Math.max(1, Number(event.target.value || 1));
+    
     setPassengers(value);
   };
   // Extrae el mensaje de error de la respuesta de la API.
@@ -135,11 +139,13 @@ export default function BookingPage() {
     }
     // Si faltan datos para crear la reserva, muestra un mensaje de error.
     if (!pkg || !currentUser) {
+      // Si faltan datos para crear la reserva, muestra un mensaje de error.
       setError('Faltan datos para crear la reserva.');
       return;
     }
     // Si la cantidad de pasajeros excede los cupos disponibles, muestra un mensaje de error.
     if (Number(passengers) > getAvailableSlots(pkg)) {
+      // Si la cantidad de pasajeros excede los cupos disponibles, muestra un mensaje de error.
       setError('La cantidad de pasajeros excede los cupos disponibles.');
       return;
     }
@@ -155,6 +161,7 @@ export default function BookingPage() {
       });
       // Elimina el identificador de sesión de la reserva.
       setSessionId(resetBookingSessionForUser(currentUser.id));
+      // Alerta de éxito y redirecciona al pago.
       setSuccess(`Reserva creada correctamente. ID: ${response.data.id}. Redirigiendo al pago...`);
       setTimeout(() => {
         navigate(`/payment/${response.data.id}`);
