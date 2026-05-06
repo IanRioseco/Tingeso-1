@@ -1,4 +1,12 @@
 import { createContext, useContext, useMemo, useState } from 'react';
+import keycloak from '../Services/keycloak';
+
+keycloak.init({ 
+  onLoad: 'check-sso',
+  silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+  checkLoginIframe: false,  
+  pkceMethod: false,        
+})
 
 const AuthContext = createContext(null);
 

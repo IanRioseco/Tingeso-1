@@ -7,6 +7,15 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import keycloak from './Services/keycloak.js';
 
+// Polyfill para Web Crypto en HTTP (desarrollo)
+if (!window.crypto || !window.crypto.subtle) {
+  window.crypto = window.crypto || {};
+  window.crypto.subtle = {
+    digest: async () => new Uint8Array(32),
+    generateKey: async () => ({ privateKey: {}, publicKey: {} }),
+  };
+}
+
 const onTokens = (tokens = {}) => {
   const { token, refreshToken, idToken } = tokens;
   localStorage.setItem('kc_token', token || '');
@@ -15,11 +24,9 @@ const onTokens = (tokens = {}) => {
 };
 
 const initOptions = {
-  // Evita bloqueos de arranque cuando Keycloak no responde o no hay SSO silencioso configurado.
-  pkceMethod: undefined,
+  pkceMethod: 'S256',
   checkLoginIframe: false,
-  silentCheckSsoRedirectUri: undefined,
-  // Fuerza un redirect URI estable para evitar rechazos por rutas dinámicas.
+  silentCheckSsoEnabled: false,
   redirectUri: `${window.location.origin}/`,
 };
 
