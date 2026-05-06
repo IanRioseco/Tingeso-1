@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./TravelAgencyBackend
+      dockerfile: Dockerfile
+    container_name: travelagency-backend
+    ports:
+      - "8090:8090"
+    environment:
+      - SERVER_PORT=8090
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./travelagencyfrontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8090/api
+        VITE_KEYCLOAK_URL: http://localhost:9090
+        VITE_KEYCLOAK_REALM: sisgr-realm
+        VITE_KEYCLOAK_CLIENT_ID: sisgr-frontend
+    container_name: travelagency-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+
+networks:
+  travelagency-network:
+    driver: bridge
