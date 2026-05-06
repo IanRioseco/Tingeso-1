@@ -16,7 +16,7 @@ const onTokens = (tokens = {}) => {
 
 const initOptions = {
   // Evita bloqueos de arranque cuando Keycloak no responde o no hay SSO silencioso configurado.
-  pkceMethod: 'S256',
+  pkceMethod: 'plain',
   checkLoginIframe: false,
   // Fuerza un redirect URI estable para evitar rechazos por rutas dinámicas.
   redirectUri: `${window.location.origin}/`,
