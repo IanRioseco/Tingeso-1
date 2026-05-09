@@ -1,0 +1,24 @@
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+x509_extensions = v3_req
+distinguished_name = dn
+
+[dn]
+C = CL
+ST = Region Metropolitana
+L = Santiago
+O = TravelAgency
+OU = Dev
+CN = 3.22.168.224
+
+[v3_req]
+subjectAltName = @alt_names
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+
+[alt_names]
+IP.1 = 3.22.168.224
+IP.2 = 127.0.0.1
+DNS.1 = localhost
