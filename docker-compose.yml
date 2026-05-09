@@ -1,0 +1,140 @@
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: travelagency-postgres
+    environment:
+      POSTGRES_DB: BDtravelagency
+      POSTGRES_USER: travelagency_user
+      POSTGRES_PASSWORD: TravelAgency@123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U travelagency_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+    ports:
+      - "8180:8080"
+    command: start-dev
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/realms/master/.well-known/openid-configuration >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  backend1:
+    image: ian04/travelagency-backend:latest
+    container_name: travelagency-backend1
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: travelagency_user
+      DB_PASSWORD: TravelAgency@123
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/sisgr-realm
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/sisgr-realm/protocol/openid-connect/certs
+      KEYCLOAK_CLIENT_ID: sisgr-backend
+      KEYCLOAK_CLIENT_SECRET: RsKfj92NkQCszmzjNjxdccrvkBI1zneO
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+
+  backend2:
+    image: ian04/travelagency-backend:latest
+    container_name: travelagency-backend2
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: travelagency_user
+      DB_PASSWORD: TravelAgency@123
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/sisgr-realm
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/sisgr-realm/protocol/openid-connect/certs
+      KEYCLOAK_CLIENT_ID: sisgr-backend
+      KEYCLOAK_CLIENT_SECRET: RsKfj92NkQCszmzjNjxdccrvkBI1zneO
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+
+  backend3:
+    image: ian04/travelagency-backend:latest
+    container_name: travelagency-backend3
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: travelagency_user
+      DB_PASSWORD: TravelAgency@123
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/sisgr-realm
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/sisgr-realm/protocol/openid-connect/certs
+      KEYCLOAK_CLIENT_ID: sisgr-backend
+      KEYCLOAK_CLIENT_SECRET: RsKfj92NkQCszmzjNjxdccrvkBI1zneO
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+
+  nginx-backend:
+    image: nginx:1.27-alpine
+    container_name: travelagency-nginx-backend
+    volumes:
+      - ./nginx-backend.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+
+  frontend:
+    image: ian04/travelagency-frontend:latest
+    container_name: travelagency-frontend
+    volumes:
+      - ./nginx-frontend.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    networks:
+      - travelagency-network
+    restart: unless-stopped
+    depends_on:
+      - nginx-backend
+
+volumes:
+  postgres_data:
+
+networks:
+  travelagency-network:
+    driver: bridge
