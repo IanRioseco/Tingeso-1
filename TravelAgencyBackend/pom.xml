@@ -170,7 +170,8 @@
 						<configuration>
 							<rules>
 								<rule>
-									<element>BUNDLE</element>
+									<!-- Apply the limit only to the services package -->
+									<element>PACKAGE</element>
 									<limits>
 										<limit>
 											<counter>LINE</counter>
@@ -179,7 +180,7 @@
 										</limit>
 									</limits>
 									<includes>
-										<include>com/example/TravelAgency/Service/*</include>
+										<include>com/example/TravelAgency/Service</include>
 									</includes>
 								</rule>
 							</rules>
