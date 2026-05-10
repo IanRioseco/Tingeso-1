@@ -1,21 +1,13 @@
 import Keycloak from 'keycloak-js';
 
-// Instancia principal de Keycloak usada por toda la app.
-// Toma valores desde variables Vite o construye una URL por defecto
-// basada en el origen actual para evitar depender de "localhost" hardcodeado.
-const defaultOrigin = typeof window !== 'undefined'
-  ? `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}`
-  : 'http://localhost:9090';
-
-const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL || defaultOrigin;
-console.log('[DEBUG] keycloak.js: VITE_KEYCLOAK_URL =', import.meta.env.VITE_KEYCLOAK_URL);
-console.log('[DEBUG] keycloak.js: defaultOrigin =', defaultOrigin);
-console.log('[DEBUG] keycloak.js: final keycloakUrl =', keycloakUrl);
+// Instancia principal de Keycloak usando HTTP (diagnóstico de HTTPS/SSL issues)
+const keycloakUrl = 'http://3.12.42.217:8180';
+console.log('[DEBUG] keycloak.js: Using hardcoded HTTP URL:', keycloakUrl);
 
 const keycloak = new Keycloak({
   url: keycloakUrl,
-  realm: import.meta.env.VITE_KEYCLOAK_REALM || 'sisgr-realm',
-  clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'sisgr-frontend',
+  realm: 'sisgr-realm',
+  clientId: 'sisgr-frontend',
 });
 
 console.log('[DEBUG] keycloak.js: Keycloak instance created with:', { url: keycloakUrl, realm: keycloak.realm, clientId: keycloak.clientId });

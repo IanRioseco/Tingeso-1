@@ -20,13 +20,12 @@ const onTokens = (tokens = {}) => {
 };
 
 const initOptions = {
-  // En Keycloak moderno, los clientes públicos con Authorization Code deben usar PKCE.
-  pkceMethod: 'S256',
+  // Diagnóstico: Deshabilitado PKCE y usando HTTP
+  pkceMethod: false,
   checkLoginIframe: false,
   onLoad: 'check-sso',
-  silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
-  // Fuerza un redirect URI estable para evitar rechazos por rutas dinámicas.
-  redirectUri: `${window.location.origin}/`,
+  silentCheckSsoRedirectUri: 'http://3.12.42.217/silent-check-sso.html',
+  redirectUri: 'http://3.12.42.217/',
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
