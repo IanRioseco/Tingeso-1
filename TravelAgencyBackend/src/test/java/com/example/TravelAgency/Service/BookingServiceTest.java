@@ -19,8 +19,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -90,6 +92,89 @@ class BookingServiceTest {
     }
 
     @Test
+    void create_whenAlreadyHasActiveBooking_throws() {
+        UserEntity user = UserEntity.builder().id(1L).build();
+        when(bookingRepository.existsByUserIdAndPackageEntityIdAndBookingStatusIn(eq(1L), eq(10L), anyList()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> bookingService.create(user, 10L, 1, "S"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("reserva activa");
+        verifyNoInteractions(packageService, promotionService);
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void create_whenPackageCanceled_throws() {
+        UserEntity user = UserEntity.builder().id(1L).build();
+        when(bookingRepository.existsByUserIdAndPackageEntityIdAndBookingStatusIn(eq(1L), eq(10L), anyList()))
+                .thenReturn(false);
+        when(packageService.findById(10L)).thenReturn(PackageEntity.builder()
+                .id(10L)
+                .status(PackageStatus.CANCELED)
+                .availableSlots(10)
+                .price(new BigDecimal("10"))
+                .build());
+
+        assertThrows(BusinessException.class, () -> bookingService.create(user, 10L, 1, "S"));
+        verifyNoInteractions(promotionService);
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void create_whenPackageExpired_throws() {
+        UserEntity user = UserEntity.builder().id(1L).build();
+        when(bookingRepository.existsByUserIdAndPackageEntityIdAndBookingStatusIn(eq(1L), eq(10L), anyList()))
+                .thenReturn(false);
+        when(packageService.findById(10L)).thenReturn(PackageEntity.builder()
+                .id(10L)
+                .status(PackageStatus.EXPIRED)
+                .availableSlots(10)
+                .price(new BigDecimal("10"))
+                .build());
+
+        assertThrows(BusinessException.class, () -> bookingService.create(user, 10L, 1, "S"));
+        verifyNoInteractions(promotionService);
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void create_whenPackageSoldOut_throws() {
+        UserEntity user = UserEntity.builder().id(1L).build();
+        when(bookingRepository.existsByUserIdAndPackageEntityIdAndBookingStatusIn(eq(1L), eq(10L), anyList()))
+                .thenReturn(false);
+        when(packageService.findById(10L)).thenReturn(PackageEntity.builder()
+                .id(10L)
+                .status(PackageStatus.SOLD_OUT)
+                .availableSlots(0)
+                .price(new BigDecimal("10"))
+                .build());
+
+        assertThrows(BusinessException.class, () -> bookingService.create(user, 10L, 1, "S"));
+        verifyNoInteractions(promotionService);
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void create_whenNotEnoughSlots_throws() {
+        UserEntity user = UserEntity.builder().id(1L).build();
+        when(bookingRepository.existsByUserIdAndPackageEntityIdAndBookingStatusIn(eq(1L), eq(10L), anyList()))
+                .thenReturn(false);
+        when(packageService.findById(10L)).thenReturn(PackageEntity.builder()
+                .id(10L)
+                .status(PackageStatus.AVAILABLE)
+                .availableSlots(1)
+                .price(new BigDecimal("10"))
+                .build());
+
+        assertThatThrownBy(() -> bookingService.create(user, 10L, 2, "S"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("cupos disponibles");
+        verifyNoInteractions(promotionService);
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
     void cancel_whenConfirmed_throws() {
         BookingEntity booking = new BookingEntity();
         booking.setId(1L);
@@ -97,6 +182,75 @@ class BookingServiceTest {
         when(bookingRepository.findById(1L)).thenReturn(java.util.Optional.of(booking));
 
         assertThrows(BusinessException.class, () -> bookingService.cancel(1L));
+    }
+
+    @Test
+    void cancel_whenPending_cancelsAndReleasesSlots() {
+        PackageEntity pkg = PackageEntity.builder().id(9L).build();
+        BookingEntity booking = new BookingEntity();
+        booking.setId(1L);
+        booking.setBookingStatus(BookingStatus.PENDING);
+        booking.setPackageEntity(pkg);
+        booking.setPassengersCount(2);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(BookingEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        bookingService.cancel(1L);
+
+        assertThat(booking.getBookingStatus()).isEqualTo(BookingStatus.CANCELLED);
+        verify(packageService).releaseSlots(pkg, 2);
+        verify(bookingRepository).save(booking);
+    }
+
+    @Test
+    void confirm_whenFinalAmountInvalid_throws() {
+        BookingEntity booking = new BookingEntity();
+        booking.setId(1L);
+        booking.setBookingStatus(BookingStatus.PENDING);
+        booking.setFinalAmount(new BigDecimal("0"));
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        assertThrows(BusinessException.class, () -> bookingService.confirm(1L));
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void confirm_happyPath_setsConfirmed_andSaves() {
+        BookingEntity booking = new BookingEntity();
+        booking.setId(1L);
+        booking.setBookingStatus(BookingStatus.PENDING);
+        booking.setFinalAmount(new BigDecimal("10.00"));
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(BookingEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        bookingService.confirm(1L);
+
+        assertThat(booking.getBookingStatus()).isEqualTo(BookingStatus.CONFIRMED);
+        verify(bookingRepository).save(booking);
+    }
+
+    @Test
+    void findByUser_delegatesToRepositoryByUserId() {
+        UserEntity user = UserEntity.builder().id(5L).build();
+        when(bookingRepository.findByUserId(5L)).thenReturn(List.of());
+
+        bookingService.findByUser(user);
+
+        verify(bookingRepository).findByUserId(5L);
+    }
+
+    @Test
+    void findAll_delegates() {
+        when(bookingRepository.findAll()).thenReturn(List.of());
+        bookingService.findAll();
+        verify(bookingRepository).findAll();
+    }
+
+    @Test
+    void findConfirmedBetween_delegates() {
+        when(bookingRepository.findConfirmedBetween(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(List.of());
+        bookingService.findConfirmedBetween(LocalDateTime.now().minusDays(1), LocalDateTime.now());
+        verify(bookingRepository).findConfirmedBetween(any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @Test
@@ -120,4 +274,3 @@ class BookingServiceTest {
         verify(bookingRepository).save(b1);
     }
 }
-
