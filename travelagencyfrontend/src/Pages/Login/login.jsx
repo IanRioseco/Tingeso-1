@@ -6,7 +6,7 @@ export default function Login() {
   const { keycloak, initialized } = useKeycloak();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/packages';
 
   if (keycloak.authenticated) {
     return <Navigate to={from} replace />;
