@@ -108,4 +108,73 @@ class PromotionServiceTest {
         assertThrows(BusinessException.class,
                 () -> promotionService.update(10L, PromotionEntity.builder().build()));
     }
+
+    @Test
+    void changeStatus_updatesAndSaves() {
+        PromotionEntity existing = PromotionEntity.builder()
+                .id(1L)
+                .name("P")
+                .discountPct(new BigDecimal("5"))
+                .validFrom(LocalDate.now().minusDays(1))
+                .validTo(LocalDate.now().plusDays(1))
+                .active(true)
+                .build();
+        when(promotionRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(promotionRepository.save(any(PromotionEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PromotionEntity updated = promotionService.changeStatus(1L, false);
+
+        assertThat(updated.isActive()).isFalse();
+        verify(promotionRepository).save(existing);
+    }
+
+    @Test
+    void calculate_whenNoDiscounts_returnsNoDiscountDetail() {
+        UserEntity user = UserEntity.builder()
+                .id(1L).fullName("U").email("u@u.com").documentId("DOC-1").nationality("CL").build();
+        when(bookingRepository.countConfirmedByUser(user)).thenReturn(0L);
+        when(bookingRepository.findBySessionId("S1")).thenReturn(List.of());
+        when(bookingRepository.countActiveBookingsSince(eq(user), any(LocalDateTime.class))).thenReturn(0L);
+        when(promotionRepository.findActivePromotions(any(LocalDate.class))).thenReturn(List.of());
+
+        PromotionService.DiscountResult result = promotionService.calculate(
+                new BigDecimal("100.00"), 1, user, "S1"
+        );
+
+        assertThat(result.discountAmount()).isEqualByComparingTo(new BigDecimal("0.00"));
+        assertThat(result.finalAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(result.discountDetail()).contains("Sin descuentos");
+    }
+
+    @Test
+    void calculate_whenMultiBySession_addsMultiDiscountDetail() {
+        UserEntity user = UserEntity.builder()
+                .id(1L).fullName("U").email("u@u.com").documentId("DOC-1").nationality("CL").build();
+
+        when(bookingRepository.countConfirmedByUser(user)).thenReturn(0L);
+        when(bookingRepository.findBySessionId("S1")).thenReturn(List.of(new Object())); // triggers multiBySession
+        when(bookingRepository.countActiveBookingsSince(eq(user), any(LocalDateTime.class))).thenReturn(0L);
+        when(promotionRepository.findActivePromotions(any(LocalDate.class))).thenReturn(List.of());
+
+        PromotionService.DiscountResult result = promotionService.calculate(
+                new BigDecimal("100.00"), 1, user, "S1"
+        );
+
+        assertThat(result.discountDetail()).contains("Compra multiple");
+    }
+
+    @Test
+    void create_whenInvalidDateRange_throws() {
+        PromotionEntity invalid = PromotionEntity.builder()
+                .name("P")
+                .discountPct(new BigDecimal("1"))
+                .validFrom(LocalDate.of(2026, 5, 10))
+                .validTo(LocalDate.of(2026, 5, 1))
+                .active(true)
+                .build();
+
+        assertThatThrownBy(() -> promotionService.create(invalid))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("fecha de termino");
+    }
 }
