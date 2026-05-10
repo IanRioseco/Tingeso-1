@@ -1,6 +1,7 @@
 package com.example.TravelAgency.Service;
 
 import com.example.TravelAgency.Entity.PromotionEntity;
+import com.example.TravelAgency.Entity.BookingEntity;
 import com.example.TravelAgency.Entity.UserEntity;
 import com.example.TravelAgency.Exceptions.BusinessException;
 import com.example.TravelAgency.Repository.BookingRepository;
@@ -152,7 +153,7 @@ class PromotionServiceTest {
                 .id(1L).fullName("U").email("u@u.com").documentId("DOC-1").nationality("CL").build();
 
         when(bookingRepository.countConfirmedByUser(user)).thenReturn(0L);
-        when(bookingRepository.findBySessionId("S1")).thenReturn(List.of(new Object())); // triggers multiBySession
+        when(bookingRepository.findBySessionId("S1")).thenReturn(List.of(new BookingEntity())); // triggers multiBySession
         when(bookingRepository.countActiveBookingsSince(eq(user), any(LocalDateTime.class))).thenReturn(0L);
         when(promotionRepository.findActivePromotions(any(LocalDate.class))).thenReturn(List.of());
 

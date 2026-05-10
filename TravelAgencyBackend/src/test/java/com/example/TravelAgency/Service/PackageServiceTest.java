@@ -291,4 +291,68 @@ class PackageServiceTest {
         assertThat(result.getStatus()).isEqualTo(PackageStatus.SOLD_OUT);
         verify(packageRepository).save(existing);
     }
+
+    @Test
+    void decreaseSlots_whenInsufficient_throws() {
+        PackageEntity pkg = PackageEntity.builder()
+                .id(1L)
+                .availableSlots(1)
+                .totalSlots(2)
+                .status(PackageStatus.AVAILABLE)
+                .build();
+
+        assertThatThrownBy(() -> packageService.decreaseSlots(pkg, 2))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Cupos insuficientes");
+        verify(packageRepository, never()).save(any());
+    }
+
+    @Test
+    void syncStatus_whenComputedSame_doesNotSave() {
+        PackageEntity existing = PackageEntity.builder()
+                .id(1L)
+                .status(PackageStatus.AVAILABLE)
+                .availableSlots(1)
+                .totalSlots(10)
+                .startDate(LocalDate.now().plusDays(1))
+                .endDate(LocalDate.now().plusDays(2))
+                .build();
+
+        PackageEntity result = packageService.syncStatus(existing);
+
+        assertThat(result).isSameAs(existing);
+        verify(packageRepository, never()).save(any());
+    }
+
+    @Test
+    void syncStatus_whenEndDateInPast_setsExpired() {
+        PackageEntity existing = PackageEntity.builder()
+                .id(1L)
+                .status(PackageStatus.AVAILABLE)
+                .availableSlots(10)
+                .totalSlots(10)
+                .endDate(LocalDate.now().minusDays(1))
+                .build();
+        when(packageRepository.save(any(PackageEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PackageEntity result = packageService.syncStatus(existing);
+
+        assertThat(result.getStatus()).isEqualTo(PackageStatus.EXPIRED);
+        verify(packageRepository).save(existing);
+    }
+
+    @Test
+    void syncStatus_whenCanceled_keepsCanceled() {
+        PackageEntity existing = PackageEntity.builder()
+                .id(1L)
+                .status(PackageStatus.CANCELED)
+                .availableSlots(10)
+                .totalSlots(10)
+                .build();
+
+        PackageEntity result = packageService.syncStatus(existing);
+
+        assertThat(result.getStatus()).isEqualTo(PackageStatus.CANCELED);
+        verify(packageRepository, never()).save(any());
+    }
 }
