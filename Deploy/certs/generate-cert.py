@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from ipaddress import ip_address
+import os
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
@@ -9,6 +10,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 base = Path(r'c:\Users\riose\OneDrive\Escritorio\Tingeso\Entrega 1\Tingeso-1\Deploy\certs')
 key_path = base / 'server.key'
 cert_path = base / 'server.crt'
+cert_host = os.getenv('CERT_HOST', '3.12.42.217').strip()
 
 key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 subject = issuer = x509.Name([
@@ -17,14 +19,20 @@ subject = issuer = x509.Name([
     x509.NameAttribute(NameOID.LOCALITY_NAME, 'Santiago'),
     x509.NameAttribute(NameOID.ORGANIZATION_NAME, 'TravelAgency'),
     x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, 'Dev'),
-    x509.NameAttribute(NameOID.COMMON_NAME, '3.22.168.224'),
+    x509.NameAttribute(NameOID.COMMON_NAME, cert_host),
 ])
 
-san = x509.SubjectAlternativeName([
-    x509.IPAddress(ip_address('3.22.168.224')),
+san_entries = [
     x509.IPAddress(ip_address('127.0.0.1')),
     x509.DNSName('localhost'),
-])
+]
+
+try:
+    san_entries.insert(0, x509.IPAddress(ip_address(cert_host)))
+except ValueError:
+    san_entries.insert(0, x509.DNSName(cert_host))
+
+san = x509.SubjectAlternativeName(san_entries)
 
 cert = (
     x509.CertificateBuilder()
