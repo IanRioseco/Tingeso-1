@@ -52,7 +52,7 @@ services:
       DB_PORT: 5432
       DB_USERNAME: travelagency_user
       DB_PASSWORD: TravelAgency@123
-      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/sisgr-realm
+      KEYCLOAK_ISSUER_URI: https://3.12.42.217/realms/sisgr-realm
       KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/sisgr-realm/protocol/openid-connect/certs
       KEYCLOAK_CLIENT_ID: sisgr-backend
       KEYCLOAK_CLIENT_SECRET: RsKfj92NkQCszmzjNjxdccrvkBI1zneO
@@ -74,7 +74,7 @@ services:
       DB_PORT: 5432
       DB_USERNAME: travelagency_user
       DB_PASSWORD: TravelAgency@123
-      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/sisgr-realm
+      KEYCLOAK_ISSUER_URI: https://3.12.42.217/realms/sisgr-realm
       KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/sisgr-realm/protocol/openid-connect/certs
       KEYCLOAK_CLIENT_ID: sisgr-backend
       KEYCLOAK_CLIENT_SECRET: RsKfj92NkQCszmzjNjxdccrvkBI1zneO
@@ -96,7 +96,7 @@ services:
       DB_PORT: 5432
       DB_USERNAME: travelagency_user
       DB_PASSWORD: TravelAgency@123
-      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/sisgr-realm
+      KEYCLOAK_ISSUER_URI: https://3.12.42.217/realms/sisgr-realm
       KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/sisgr-realm/protocol/openid-connect/certs
       KEYCLOAK_CLIENT_ID: sisgr-backend
       KEYCLOAK_CLIENT_SECRET: RsKfj92NkQCszmzjNjxdccrvkBI1zneO
