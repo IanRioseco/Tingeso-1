@@ -20,12 +20,12 @@ const onTokens = (tokens = {}) => {
 };
 
 const initOptions = {
-  // Diagnóstico: Deshabilitado PKCE y usando HTTP
-  pkceMethod: false,
+  // Cliente público con Authorization Code debe usar PKCE.
+  pkceMethod: 'S256',
   checkLoginIframe: false,
   onLoad: 'check-sso',
-  silentCheckSsoRedirectUri: 'http://3.12.42.217/silent-check-sso.html',
-  redirectUri: 'http://3.12.42.217/',
+  silentCheckSsoRedirectUri: 'https://3.12.42.217/silent-check-sso.html',
+  redirectUri: 'https://3.12.42.217/',
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

@@ -1,8 +1,8 @@
 import Keycloak from 'keycloak-js';
 
-// Instancia principal de Keycloak usando HTTP (diagnóstico de HTTPS/SSL issues)
-const keycloakUrl = 'http://3.12.42.217:8180';
-console.log('[DEBUG] keycloak.js: Using hardcoded HTTP URL:', keycloakUrl);
+// Instancia principal de Keycloak usando HTTPS para evitar mixed content.
+const keycloakUrl = 'https://3.12.42.217';
+console.log('[DEBUG] keycloak.js: Using hardcoded HTTPS URL:', keycloakUrl);
 
 const keycloak = new Keycloak({
   url: keycloakUrl,
