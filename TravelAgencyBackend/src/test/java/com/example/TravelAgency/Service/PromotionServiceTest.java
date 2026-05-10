@@ -16,8 +16,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -84,5 +86,26 @@ class PromotionServiceTest {
         assertThrows(BusinessException.class, () -> promotionService.create(invalid));
         verifyNoInteractions(promotionRepository);
     }
-}
 
+    @Test
+    void findAll_sortsByValidFromDesc() {
+        PromotionEntity p1 = PromotionEntity.builder()
+                .name("Old").discountPct(new BigDecimal("5")).active(true)
+                .validFrom(LocalDate.of(2026, 1, 1)).validTo(LocalDate.of(2026, 1, 2)).build();
+        PromotionEntity p2 = PromotionEntity.builder()
+                .name("New").discountPct(new BigDecimal("5")).active(true)
+                .validFrom(LocalDate.of(2026, 2, 1)).validTo(LocalDate.of(2026, 2, 2)).build();
+        when(promotionRepository.findAll()).thenReturn(List.of(p1, p2));
+
+        List<PromotionEntity> sorted = promotionService.findAll();
+
+        assertThat(sorted).extracting(PromotionEntity::getName).containsExactly("New", "Old");
+    }
+
+    @Test
+    void update_whenMissing_throws() {
+        when(promotionRepository.findById(10L)).thenReturn(Optional.empty());
+        assertThrows(BusinessException.class,
+                () -> promotionService.update(10L, PromotionEntity.builder().build()));
+    }
+}
