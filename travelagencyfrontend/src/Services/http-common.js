@@ -3,11 +3,9 @@ import keycloak from './keycloak';
 
 const envBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const isBrowser = typeof window !== 'undefined';
-const PROD_DEFAULT_API = 'https://3.14.14.199/api';
 const isPublicHost = isBrowser && !['localhost', '127.0.0.1'].includes(window.location.hostname);
 const isLocalEnvBase = typeof envBaseUrl === 'string' && /https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(envBaseUrl);
-// Si estamos en un host público pero la variable apunta a localhost, usar ruta relativa '/api'
-const resolvedBaseUrl = isPublicHost && isLocalEnvBase ? '/api' : (envBaseUrl || PROD_DEFAULT_API);
+const resolvedBaseUrl = isPublicHost && isLocalEnvBase ? '/api' : (envBaseUrl || '/api');
 
 // Cliente HTTP único del frontend.
 // Centraliza URL base e inyección automática del token en cada request.
