@@ -25,8 +25,13 @@ apiClient.interceptors.request.use(
       }
     }
 
-    // Usa el token vigente de Keycloak o, como respaldo, el almacenado localmente.
-    const token = keycloak.token || localStorage.getItem('kc_token');
+    // Usa solo el token vigente de Keycloak para evitar enviar credenciales obsoletas.
+    const token = keycloak.authenticated ? keycloak.token : null;
+    if (!keycloak.authenticated) {
+      localStorage.removeItem('kc_token');
+      localStorage.removeItem('kc_refresh_token');
+      localStorage.removeItem('kc_id_token');
+    }
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;

@@ -14,9 +14,23 @@ console.log('[DEBUG] keycloak.init:', typeof keycloak.init);
 const onTokens = (tokens = {}) => {
   const { token, refreshToken, idToken } = tokens;
   console.log('[DEBUG] onTokens called with:', { token: !!token, refreshToken: !!refreshToken, idToken: !!idToken });
-  localStorage.setItem('kc_token', token || '');
+  if (!token) {
+    localStorage.removeItem('kc_token');
+    localStorage.removeItem('kc_refresh_token');
+    localStorage.removeItem('kc_id_token');
+    return;
+  }
+  localStorage.setItem('kc_token', token);
   localStorage.setItem('kc_refresh_token', refreshToken || '');
   localStorage.setItem('kc_id_token', idToken || '');
+};
+
+const onEvent = (event) => {
+  if (event === 'onAuthLogout' || event === 'onAuthError') {
+    localStorage.removeItem('kc_token');
+    localStorage.removeItem('kc_refresh_token');
+    localStorage.removeItem('kc_id_token');
+  }
 };
 
 const initOptions = {
@@ -36,6 +50,7 @@ root.render(
       authClient={keycloak}
       initOptions={initOptions}
       onTokens={onTokens}
+      onEvent={onEvent}
       // No bloquea el render completo de la app si Keycloak tarda o no responde.
       isLoadingCheck={() => false}
     >
