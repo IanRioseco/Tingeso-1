@@ -14,6 +14,7 @@ export default function Login() {
 
   const handleLogin = () => {
     keycloak.login({
+      prompt: 'login',
       redirectUri: `${window.location.origin}${from}`,
     });
   };
