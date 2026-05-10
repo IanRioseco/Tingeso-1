@@ -23,7 +23,8 @@ const initOptions = {
   // En Keycloak moderno, los clientes públicos con Authorization Code deben usar PKCE.
   pkceMethod: 'S256',
   checkLoginIframe: false,
-  silentCheckSsoRedirectUri: undefined,
+  onLoad: 'check-sso',
+  silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
   // Fuerza un redirect URI estable para evitar rechazos por rutas dinámicas.
   redirectUri: `${window.location.origin}/`,
 };
