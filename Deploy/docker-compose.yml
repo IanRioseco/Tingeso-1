@@ -27,9 +27,11 @@ services:
       KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     ports:
       - "8180:8080"
-    command: start-dev
+    command: start-dev --import-realm
     networks:
       - travelagency-network
     restart: unless-stopped
