@@ -13,10 +13,19 @@ export default function Login() {
   }
 
   const handleLogin = () => {
-    keycloak.login({
-      prompt: 'login',
-      redirectUri: `${window.location.origin}${from}`,
-    });
+    console.log('[DEBUG] handleLogin called');
+    console.log('[DEBUG] keycloak object:', keycloak);
+    console.log('[DEBUG] keycloak.login type:', typeof keycloak.login);
+    console.log('[DEBUG] about to call keycloak.login with redirectUri:', `${window.location.origin}${from}`);
+    try {
+      keycloak.login({
+        prompt: 'login',
+        redirectUri: `${window.location.origin}${from}`,
+      });
+      console.log('[DEBUG] keycloak.login() called successfully');
+    } catch (err) {
+      console.error('[DEBUG] Error calling keycloak.login():', err);
+    }
   };
 
   return (

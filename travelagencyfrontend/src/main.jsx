@@ -7,8 +7,13 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import keycloak from './Services/keycloak.js';
 
+console.log('[DEBUG] main.jsx loaded');
+console.log('[DEBUG] keycloak instance:', keycloak);
+console.log('[DEBUG] keycloak.init:', typeof keycloak.init);
+
 const onTokens = (tokens = {}) => {
   const { token, refreshToken, idToken } = tokens;
+  console.log('[DEBUG] onTokens called with:', { token: !!token, refreshToken: !!refreshToken, idToken: !!idToken });
   localStorage.setItem('kc_token', token || '');
   localStorage.setItem('kc_refresh_token', refreshToken || '');
   localStorage.setItem('kc_id_token', idToken || '');
@@ -24,6 +29,7 @@ const initOptions = {
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+console.log('[DEBUG] about to render React app with ReactKeycloakProvider');
 root.render(
   <React.StrictMode>
     <ReactKeycloakProvider
@@ -41,3 +47,4 @@ root.render(
     </ReactKeycloakProvider>
   </React.StrictMode>
 );
+console.log('[DEBUG] React app rendered');
