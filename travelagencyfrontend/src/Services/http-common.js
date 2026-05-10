@@ -1,12 +1,17 @@
 import axios from 'axios';
 import keycloak from './keycloak';
 
+const envBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const isBrowser = typeof window !== 'undefined';
+const isPublicHost = isBrowser && !['localhost', '127.0.0.1'].includes(window.location.hostname);
+const isLocalEnvBase = typeof envBaseUrl === 'string' && /https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(envBaseUrl);
+const resolvedBaseUrl = isPublicHost && isLocalEnvBase ? '/api' : (envBaseUrl || '/api');
+
 // Cliente HTTP único del frontend.
 // Centraliza URL base e inyección automática del token en cada request.
 const apiClient = axios.create({
-  // En dev conviene usar '/api' para aprovechar el proxy de Vite y evitar CORS.
-  // Si defines VITE_API_BASE_URL, ese valor tiene prioridad.
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  // En despliegue público no debe usar localhost aunque venga por variable de build.
+  baseURL: resolvedBaseUrl,
 });
 
 apiClient.interceptors.request.use(

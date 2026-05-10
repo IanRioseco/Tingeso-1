@@ -1,8 +1,8 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-ARG VITE_API_BASE_URL=http://localhost:8090/api
-ARG VITE_KEYCLOAK_URL=http://localhost:9090
+ARG VITE_API_BASE_URL=/api
+ARG VITE_KEYCLOAK_URL=
 ARG VITE_KEYCLOAK_REALM=sisgr-realm
 ARG VITE_KEYCLOAK_CLIENT_ID=sisgr-frontend
 

@@ -15,8 +15,8 @@ const onTokens = (tokens = {}) => {
 };
 
 const initOptions = {
-  // Evita bloqueos de arranque cuando Keycloak no responde o no hay SSO silencioso configurado.
-  pkceMethod: false,
+  // En Keycloak moderno, los clientes públicos con Authorization Code deben usar PKCE.
+  pkceMethod: 'S256',
   checkLoginIframe: false,
   silentCheckSsoRedirectUri: undefined,
   // Fuerza un redirect URI estable para evitar rechazos por rutas dinámicas.
