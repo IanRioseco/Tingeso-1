@@ -31,6 +31,9 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Ensure mvnw is executable
+        run: chmod +x ./TravelAgencyBackend/mvnw
+
       - name: Run backend unit tests (with debug)
         working-directory: TravelAgencyBackend
         run: ./mvnw -B -e -X test
