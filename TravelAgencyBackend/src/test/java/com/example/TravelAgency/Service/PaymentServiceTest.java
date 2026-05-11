@@ -155,6 +155,34 @@ class PaymentServiceTest {
     }
 
     @Test
+    void processPayment_whenBookingExpired_throws() {
+        BookingEntity booking = new BookingEntity();
+        booking.setId(1L);
+        booking.setBookingStatus(BookingStatus.EXPIRED);
+        booking.setFinalAmount(new BigDecimal("10.00"));
+        when(bookingService.findById(1L)).thenReturn(booking);
+
+        assertThrows(BusinessException.class,
+                () -> paymentService.processPayment(1L, "4111111111111111", "12/30", "123"));
+        verify(paymentRepository, never()).save(any());
+        verify(bookingService, never()).confirm(anyLong());
+    }
+
+    @Test
+    void processPayment_whenBookingCancelled_throws() {
+        BookingEntity booking = new BookingEntity();
+        booking.setId(1L);
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        booking.setFinalAmount(new BigDecimal("10.00"));
+        when(bookingService.findById(1L)).thenReturn(booking);
+
+        assertThrows(BusinessException.class,
+                () -> paymentService.processPayment(1L, "4111111111111111", "12/30", "123"));
+        verify(paymentRepository, never()).save(any());
+        verify(bookingService, never()).confirm(anyLong());
+    }
+
+    @Test
     void findApprovedPaymentsBetween_delegates() {
         when(paymentRepository.findApprovedPaymentsBetween(any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of());

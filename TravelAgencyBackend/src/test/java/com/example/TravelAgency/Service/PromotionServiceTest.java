@@ -111,6 +111,35 @@ class PromotionServiceTest {
     }
 
     @Test
+    void update_happyPath_updatesFields_andSaves() {
+        PromotionEntity existing = PromotionEntity.builder()
+                .id(1L)
+                .name("Old")
+                .discountPct(new BigDecimal("5"))
+                .validFrom(LocalDate.of(2026, 1, 1))
+                .validTo(LocalDate.of(2026, 1, 2))
+                .active(true)
+                .build();
+        when(promotionRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(promotionRepository.save(any(PromotionEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PromotionEntity updated = PromotionEntity.builder()
+                .name("New")
+                .discountPct(new BigDecimal("10"))
+                .validFrom(LocalDate.of(2026, 2, 1))
+                .validTo(LocalDate.of(2026, 2, 5))
+                .active(false)
+                .build();
+
+        PromotionEntity saved = promotionService.update(1L, updated);
+
+        assertThat(saved.getName()).isEqualTo("New");
+        assertThat(saved.getDiscountPct()).isEqualByComparingTo(new BigDecimal("10"));
+        assertThat(saved.isActive()).isFalse();
+        verify(promotionRepository).save(existing);
+    }
+
+    @Test
     void changeStatus_updatesAndSaves() {
         PromotionEntity existing = PromotionEntity.builder()
                 .id(1L)
@@ -177,5 +206,18 @@ class PromotionServiceTest {
         assertThatThrownBy(() -> promotionService.create(invalid))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("fecha de termino");
+    }
+
+    @Test
+    void create_whenMissingDates_throws() {
+        PromotionEntity invalid = PromotionEntity.builder()
+                .name("P")
+                .discountPct(new BigDecimal("1"))
+                .active(true)
+                .build();
+
+        assertThatThrownBy(() -> promotionService.create(invalid))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("vigencia");
     }
 }

@@ -203,6 +203,35 @@ class BookingServiceTest {
     }
 
     @Test
+    void cancel_whenAlreadyCancelled_throws() {
+        BookingEntity booking = new BookingEntity();
+        booking.setId(1L);
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        assertThrows(BusinessException.class, () -> bookingService.cancel(1L));
+        verifyNoInteractions(packageService);
+    }
+
+    @Test
+    void cancel_whenExpired_throws() {
+        BookingEntity booking = new BookingEntity();
+        booking.setId(1L);
+        booking.setBookingStatus(BookingStatus.EXPIRED);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        assertThrows(BusinessException.class, () -> bookingService.cancel(1L));
+        verifyNoInteractions(packageService);
+    }
+
+    @Test
+    void findById_whenMissing_throws() {
+        when(bookingRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(com.example.TravelAgency.Exceptions.ResourceNotFoundException.class,
+                () -> bookingService.findById(99L));
+    }
+
+    @Test
     void confirm_whenFinalAmountInvalid_throws() {
         BookingEntity booking = new BookingEntity();
         booking.setId(1L);

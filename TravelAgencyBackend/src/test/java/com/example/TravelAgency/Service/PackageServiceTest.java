@@ -72,6 +72,86 @@ class PackageServiceTest {
     }
 
     @Test
+    void create_whenInvalidPrice_throws() {
+        PackageEntity pkg = PackageEntity.builder()
+                .name("P1")
+                .destination("D")
+                .description("Desc")
+                .startDate(LocalDate.now().plusDays(10))
+                .endDate(LocalDate.now().plusDays(12))
+                .price(BigDecimal.ZERO)
+                .totalSlots(10)
+                .servicesIncluded("Hotel")
+                .conditions("Cond")
+                .build();
+
+        assertThatThrownBy(() -> packageService.create(pkg))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("precio");
+        verifyNoInteractions(packageRepository);
+    }
+
+    @Test
+    void create_whenInvalidDates_throws() {
+        PackageEntity pkg = PackageEntity.builder()
+                .name("P1")
+                .destination("D")
+                .description("Desc")
+                .startDate(LocalDate.now().plusDays(10))
+                .endDate(LocalDate.now().plusDays(9)) // end not after start
+                .price(new BigDecimal("100"))
+                .totalSlots(10)
+                .servicesIncluded("Hotel")
+                .conditions("Cond")
+                .build();
+
+        assertThatThrownBy(() -> packageService.create(pkg))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("fecha");
+        verifyNoInteractions(packageRepository);
+    }
+
+    @Test
+    void create_whenMissingServicesIncluded_throws() {
+        PackageEntity pkg = PackageEntity.builder()
+                .name("P1")
+                .destination("D")
+                .description("Desc")
+                .startDate(LocalDate.now().plusDays(10))
+                .endDate(LocalDate.now().plusDays(12))
+                .price(new BigDecimal("100"))
+                .totalSlots(10)
+                .servicesIncluded(" ")
+                .conditions("Cond")
+                .build();
+
+        assertThatThrownBy(() -> packageService.create(pkg))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("servicios");
+        verifyNoInteractions(packageRepository);
+    }
+
+    @Test
+    void create_whenMissingConditions_throws() {
+        PackageEntity pkg = PackageEntity.builder()
+                .name("P1")
+                .destination("D")
+                .description("Desc")
+                .startDate(LocalDate.now().plusDays(10))
+                .endDate(LocalDate.now().plusDays(12))
+                .price(new BigDecimal("100"))
+                .totalSlots(10)
+                .servicesIncluded("Hotel")
+                .conditions(" ")
+                .build();
+
+        assertThatThrownBy(() -> packageService.create(pkg))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("condiciones");
+        verifyNoInteractions(packageRepository);
+    }
+
+    @Test
     void findById_whenNotFound_throws() {
         when(packageRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> packageService.findById(99L));
@@ -113,6 +193,23 @@ class PackageServiceTest {
     }
 
     @Test
+    void releaseSlots_whenNotSoldOut_keepsStatus() {
+        PackageEntity pkg = PackageEntity.builder()
+                .id(1L)
+                .availableSlots(1)
+                .totalSlots(2)
+                .status(PackageStatus.AVAILABLE)
+                .build();
+        when(packageRepository.save(any(PackageEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        packageService.releaseSlots(pkg, 1);
+
+        assertThat(pkg.getAvailableSlots()).isEqualTo(2);
+        assertThat(pkg.getStatus()).isEqualTo(PackageStatus.AVAILABLE);
+        verify(packageRepository).save(pkg);
+    }
+
+    @Test
     void findAvailable_filtersOnlyPubliclyReservable() {
         LocalDate today = LocalDate.now();
         PackageEntity ok = PackageEntity.builder()
@@ -136,6 +233,37 @@ class PackageServiceTest {
         when(packageRepository.save(any(PackageEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         List<PackageEntity> result = packageService.findAvailable();
+
+        assertThat(result).extracting(PackageEntity::getId).containsExactly(1L);
+    }
+
+    @Test
+    void search_filtersOnlyPubliclyReservable() {
+        LocalDate today = LocalDate.now();
+        PackageEntity ok = PackageEntity.builder()
+                .id(1L)
+                .name("Ok")
+                .startDate(today.plusDays(1))
+                .endDate(today.plusDays(2))
+                .availableSlots(1)
+                .status(PackageStatus.AVAILABLE)
+                .build();
+        PackageEntity notOk = PackageEntity.builder()
+                .id(2L)
+                .name("NotOk")
+                .startDate(today.minusDays(2))
+                .endDate(today.minusDays(1))
+                .availableSlots(3)
+                .status(PackageStatus.AVAILABLE)
+                .build();
+
+        when(packageRepository.searchPackages(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of(ok, notOk));
+        when(packageRepository.save(any(PackageEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        List<PackageEntity> result = packageService.search(
+                null, null, null, null, null, null, null, null, null, null
+        );
 
         assertThat(result).extracting(PackageEntity::getId).containsExactly(1L);
     }
@@ -191,6 +319,34 @@ class PackageServiceTest {
         assertThatThrownBy(() -> packageService.update(1L, updated))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("fecha de inicio");
+        verify(packageRepository, never()).save(any());
+    }
+
+    @Test
+    void update_whenReservedSlotsAndChangeEndDate_throws() {
+        PackageEntity existing = PackageEntity.builder()
+                .id(1L)
+                .name("P1")
+                .destination("D")
+                .description("Desc")
+                .startDate(LocalDate.now().plusDays(10))
+                .endDate(LocalDate.now().plusDays(12))
+                .price(new BigDecimal("100"))
+                .totalSlots(10)
+                .availableSlots(9) // reserved = 1
+                .servicesIncluded("Hotel")
+                .conditions("Cond")
+                .status(PackageStatus.AVAILABLE)
+                .build();
+        when(packageRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        PackageEntity updated = PackageEntity.builder()
+                .endDate(existing.getEndDate().plusDays(1))
+                .build();
+
+        assertThatThrownBy(() -> packageService.update(1L, updated))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("fecha de termino");
         verify(packageRepository, never()).save(any());
     }
 
@@ -251,6 +407,31 @@ class PackageServiceTest {
     }
 
     @Test
+    void changeStatus_happyPath_setsStatusAndSaves() {
+        PackageEntity existing = PackageEntity.builder()
+                .id(1L)
+                .name("P1")
+                .destination("D")
+                .description("Desc")
+                .startDate(LocalDate.now().plusDays(1))
+                .endDate(LocalDate.now().plusDays(2))
+                .price(new BigDecimal("100"))
+                .totalSlots(10)
+                .availableSlots(5)
+                .servicesIncluded("Hotel")
+                .conditions("Cond")
+                .status(PackageStatus.SOLD_OUT)
+                .build();
+        when(packageRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(packageRepository.save(any(PackageEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        packageService.changeStatus(1L, PackageStatus.AVAILABLE);
+
+        assertThat(existing.getStatus()).isEqualTo(PackageStatus.AVAILABLE);
+        verify(packageRepository, atLeastOnce()).save(existing);
+    }
+
+    @Test
     void delete_whenHasReservations_throws() {
         PackageEntity existing = PackageEntity.builder()
                 .id(1L)
@@ -272,6 +453,29 @@ class PackageServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("No se puede eliminar");
         verify(packageRepository, never()).delete(any());
+    }
+
+    @Test
+    void delete_happyPath_deletes() {
+        PackageEntity existing = PackageEntity.builder()
+                .id(1L)
+                .name("P1")
+                .destination("D")
+                .description("Desc")
+                .startDate(LocalDate.now().plusDays(1))
+                .endDate(LocalDate.now().plusDays(2))
+                .price(new BigDecimal("100"))
+                .totalSlots(10)
+                .availableSlots(10) // reserved 0
+                .servicesIncluded("Hotel")
+                .conditions("Cond")
+                .status(PackageStatus.AVAILABLE)
+                .build();
+        when(packageRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        packageService.delete(1L);
+
+        verify(packageRepository).delete(existing);
     }
 
     @Test

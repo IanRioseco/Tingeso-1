@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -155,5 +156,103 @@ class UserServiceTest {
         userService.findAll();
         verify(userRepository).findAll();
     }
-}
 
+    @Test
+    void findByEmail_whenMissing_throws() {
+        when(userRepository.findByEmail("x@x.com")).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> userService.findByEmail("x@x.com"));
+    }
+
+    @Test
+    void deactivate_setsInactiveAndSaves() {
+        UserEntity user = UserEntity.builder()
+                .id(1L)
+                .active(true)
+                .status(UserStatus.ACTIVE)
+                .email("u@u.com")
+                .fullName("U")
+                .documentId("D")
+                .nationality("CL")
+                .build();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        userService.deactivate(1L);
+
+        assertThat(user.isActive()).isFalse();
+        assertThat(user.getStatus()).isEqualTo(UserStatus.INACTIVE);
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void getOrCreateFromJwt_whenEmailMissing_generatesLocalEmailFromPreferredUsername() {
+        when(userRepository.findByKeycloakUserId("KC1")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("john@local.keycloak")).thenReturn(Optional.empty());
+        when(userRepository.existsByDocumentId(anyString())).thenReturn(false);
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Jwt jwt = Jwt.withTokenValue("t")
+                .header("alg", "none")
+                .claim("sub", "KC1")
+                .claim("preferred_username", "John")
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+
+        UserEntity created = userService.getOrCreateFromJwt(jwt);
+
+        assertThat(created.getEmail()).isEqualTo("john@local.keycloak");
+        assertThat(created.getFullName()).isEqualTo("John");
+    }
+
+    @Test
+    void getOrCreateFromJwt_whenExistingByEmailWithoutKeycloakId_linksUser() {
+        UserEntity existingByEmail = UserEntity.builder()
+                .id(1L)
+                .keycloakUserId(null)
+                .fullName("")
+                .email("u@u.com")
+                .documentId("D")
+                .nationality("CL")
+                .build();
+
+        when(userRepository.findByKeycloakUserId("KC1")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("u@u.com")).thenReturn(Optional.of(existingByEmail));
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Jwt jwt = Jwt.withTokenValue("t")
+                .header("alg", "none")
+                .claim("sub", "KC1")
+                .claim("email", "u@u.com")
+                .claim("name", "Full Name")
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+
+        UserEntity result = userService.getOrCreateFromJwt(jwt);
+
+        assertThat(result.getKeycloakUserId()).isEqualTo("KC1");
+        assertThat(result.getFullName()).isEqualTo("Full Name");
+        verify(userRepository).save(existingByEmail);
+    }
+
+    @Test
+    void getOrCreateFromJwt_whenDocumentIdExists_addsSuffix() {
+        when(userRepository.findByKeycloakUserId("KC1")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("u@u.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByDocumentId(anyString())).thenReturn(true, false);
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Jwt jwt = Jwt.withTokenValue("t")
+                .header("alg", "none")
+                .claim("sub", "KC1")
+                .claim("email", "u@u.com")
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+
+        UserEntity created = userService.getOrCreateFromJwt(jwt);
+
+        assertThat(created.getDocumentId()).contains("-1");
+    }
+}
