@@ -11,6 +11,11 @@
   align-items: flex-start;
   gap: var(--space-3);
   flex-wrap: wrap;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(248, 250, 252, 0.9));
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5) var(--space-5);
+  box-shadow: var(--shadow-sm);
 }
 
 .booking-kicker {
@@ -24,7 +29,8 @@
 
 .booking-header h1 {
   margin: 0;
-  color: var(--color-primary);
+  color: var(--color-gray-900);
+  font-size: clamp(2rem, 3vw, 3rem);
 }
 
 .booking-subtitle {
@@ -39,11 +45,11 @@
 }
 
 .booking-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.96));
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-md);
 }
 
 .booking-card h3,
@@ -80,17 +86,17 @@
 .booking-form input {
   width: 100%;
   box-sizing: border-box;
-  padding: var(--space-2);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  border-radius: var(--radius-lg);
+  background: rgba(248, 250, 252, 0.95);
 }
 
 .booking-preview {
-  background: var(--color-light-bg);
-  border: 1px solid #e9d5ff;
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.08), rgba(255, 255, 255, 0.96));
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
   display: grid;
   gap: var(--space-2);
 }
@@ -115,7 +121,7 @@
   font-weight: 700;
   color: var(--color-primary);
   padding-top: var(--space-2);
-  border-top: 1px solid #e9d5ff;
+  border-top: 1px solid rgba(124, 58, 237, 0.16);
 }
 
 .booking-discount-detail {
@@ -133,6 +139,24 @@
   color: var(--color-gray-700);
   display: grid;
   gap: 0.5rem;
+}
+
+.booking-notes {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.booking-notes h3,
+.booking-notes li {
+  color: inherit;
+}
+
+.booking-notes .booking-card-icon {
+  color: #fbbf24;
+}
+
+.booking-notes ul {
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .booking-error {

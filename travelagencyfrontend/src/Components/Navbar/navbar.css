@@ -7,9 +7,9 @@
   top: 0;
   width: 260px;
   height: 100vh;
-  background: var(--color-white);
-  border-right: 1px solid var(--color-gray-200);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
+  border-right: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 18px 0 45px rgba(15, 23, 42, 0.08);
   z-index: 110;
   display: flex;
   flex-direction: column;
@@ -32,8 +32,8 @@
 /* estilos para el logo de la barra lateral */
 .sidebar-brand {
   font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-primary);
+  font-weight: 800;
+  color: var(--color-primary-dark);
   text-decoration: none;
 }
 
@@ -53,13 +53,15 @@
   color: var(--color-gray-600);
   text-decoration: none;
   border-radius: var(--radius-md);
-  font-weight: 600;
+  font-weight: 700;
+  transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
 }
 
 /* estilos para el enlace activo de la barra lateral */
 .sidebar-links a:hover {
   color: var(--color-primary);
-  background: var(--color-gray-100);
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.08), rgba(30, 58, 138, 0.08));
+  transform: translateX(2px);
 }
 
 /* estilos para las secciones de la barra lateral */
@@ -109,9 +111,9 @@
   z-index: 130;
   width: 40px;
   height: 40px;
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
-  background: var(--color-white);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
   color: var(--color-gray-800);
   font-size: 1.35rem;
   line-height: 1;
@@ -119,7 +121,8 @@
   text-align: center;
   appearance: none;
   cursor: pointer;
-  transition: left 0.2s ease;
+  box-shadow: var(--shadow-md);
+  transition: left 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* cuando la barra lateral está abierta, se muestra el botón de cerrar la barra lateral */
@@ -127,12 +130,18 @@
   left: 215px;
 }
 
+.sidebar-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
 /* estilos para la superposición de la barra lateral */
 .sidebar-overlay {
   display: block;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(15, 23, 42, 0.38);
+  backdrop-filter: blur(4px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
