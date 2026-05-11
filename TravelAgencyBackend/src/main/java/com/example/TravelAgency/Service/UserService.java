@@ -107,6 +107,7 @@ public class UserService {
             }
 
             existingByEmail.setKeycloakUserId(keycloakUserId);
+            existingByEmail.setRole(role);
             if (existingByEmail.getFullName() == null || existingByEmail.getFullName().isBlank()) {
                 existingByEmail.setFullName(fullName);
             }
