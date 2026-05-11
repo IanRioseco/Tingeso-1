@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +39,16 @@ public class UserService {
             throw new BusinessException("Token JWT invalido: no contiene claim sub");
         }
 
-        return userRepository.findByKeycloakUserId(keycloakUserId)
+        UserRole role = extractRoleFromJwt(jwt);
+        UserEntity user = userRepository.findByKeycloakUserId(keycloakUserId)
                 .orElseGet(() -> createOrLinkLocalUser(jwt, keycloakUserId));
+
+        if (user.getRole() != role) {
+            user.setRole(role);
+            user = userRepository.save(user);
+        }
+
+        return user;
     }
 
     public List<UserEntity> findAll() {
@@ -77,6 +86,7 @@ public class UserService {
         String preferredUsername = claimAsString(jwt, "preferred_username");
         String fullName = claimAsString(jwt, "name");
         String email = claimAsString(jwt, "email");
+        UserRole role = extractRoleFromJwt(jwt);
 
         if (fullName == null) {
             fullName = preferredUsername != null ? preferredUsername : "Usuario";
@@ -110,12 +120,24 @@ public class UserService {
                 .phone(null)
                 .documentId(buildPendingDocumentId(keycloakUserId))
                 .nationality("PENDING")
-                .role(UserRole.CLIENT)
+                .role(role)
                 .status(UserStatus.ACTIVE)
                 .active(true)
                 .build();
 
         return userRepository.save(user);
+    }
+
+    private UserRole extractRoleFromJwt(Jwt jwt) {
+        Object realmAccess = jwt.getClaims().get("realm_access");
+        if (realmAccess instanceof Map<?, ?> access && access.get("roles") instanceof List<?> roles) {
+            for (Object role : roles) {
+                if (role != null && "ADMIN".equalsIgnoreCase(role.toString())) {
+                    return UserRole.ADMIN;
+                }
+            }
+        }
+        return UserRole.CLIENT;
     }
 
     private String buildPendingDocumentId(String keycloakUserId) {

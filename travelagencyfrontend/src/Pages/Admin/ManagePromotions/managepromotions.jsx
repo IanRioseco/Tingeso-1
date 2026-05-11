@@ -87,7 +87,7 @@ export default function ManagePromotions() {
       setShowForm(false);
       fetchPromotions();
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar la promoción');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Error al guardar la promoción');
     }
   };
 

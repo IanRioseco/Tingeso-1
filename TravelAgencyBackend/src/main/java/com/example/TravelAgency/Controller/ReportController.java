@@ -1,6 +1,5 @@
 package com.example.TravelAgency.Controller;
 
-import com.example.TravelAgency.Service.AccessControlService;
 import com.example.TravelAgency.Service.ReportService;
 import com.example.TravelAgency.Service.UserService;
 import com.example.TravelAgency.dto.response.PackageRankingItemResponse;
@@ -30,7 +29,6 @@ Incluye reportes de ventas por periodo y ranking de paquetes.
 public class ReportController {
 
     private final ReportService reportService;
-    private final AccessControlService accessControlService;
     private final UserService userService;
 
     /**
@@ -42,8 +40,7 @@ public class ReportController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        Long userId = userService.getOrCreateFromJwt(jwt).getId();
-        accessControlService.requireAdmin(userId);
+        userService.getOrCreateFromJwt(jwt);
         return ResponseEntity.ok(reportService.salesByPeriod(from, to));
     }
 
@@ -56,8 +53,7 @@ public class ReportController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        Long userId = userService.getOrCreateFromJwt(jwt).getId();
-        accessControlService.requireAdmin(userId);
+        userService.getOrCreateFromJwt(jwt);
         return ResponseEntity.ok(reportService.rankingPackagesByPeriod(from, to));
     }
 }

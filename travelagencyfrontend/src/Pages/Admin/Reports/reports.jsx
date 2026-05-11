@@ -24,7 +24,7 @@ export default function ReportsPage() {
       setSales(salesResponse.data || []);
       setRanking(rankingResponse.data || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'No se pudieron generar los reportes.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'No se pudieron generar los reportes.');
     } finally {
       setLoading(false);
     }

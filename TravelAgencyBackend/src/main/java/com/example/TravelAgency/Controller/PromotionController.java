@@ -2,13 +2,13 @@ package com.example.TravelAgency.Controller;
 
 import com.example.TravelAgency.Entity.PromotionEntity;
 import com.example.TravelAgency.Entity.UserEntity;
-import com.example.TravelAgency.Service.AccessControlService;
 import com.example.TravelAgency.Service.PromotionService;
 import com.example.TravelAgency.Service.UserService;
 import com.example.TravelAgency.dto.request.PromotionCalculationRequest;
 import com.example.TravelAgency.dto.request.PromotionRequest;
 import com.example.TravelAgency.dto.response.PromotionCalculationResponse;
 import com.example.TravelAgency.dto.response.PromotionResponse;
+import com.example.TravelAgency.Service.AccessControlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,14 +27,13 @@ import java.util.List;
 public class PromotionController {
 
     private final PromotionService promotionService;
-    private final UserService userService;
-    private final AccessControlService accessControlService;
+        private final UserService userService;
+        private final com.example.TravelAgency.Service.AccessControlService accessControlService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PromotionResponse>> findAll(@AuthenticationPrincipal Jwt jwt) {
-        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
-        accessControlService.requireAdmin(currentUser.getId());
+        userService.getOrCreateFromJwt(jwt);
         return ResponseEntity.ok(
                 promotionService.findAll().stream().map(PromotionResponse::from).toList()
         );
@@ -69,8 +68,7 @@ public class PromotionController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PromotionResponse> create(@AuthenticationPrincipal Jwt jwt,
                                                     @Valid @RequestBody PromotionRequest request) {
-        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
-        accessControlService.requireAdmin(currentUser.getId());
+        userService.getOrCreateFromJwt(jwt);
         PromotionEntity promotion = PromotionEntity.builder()
                 .name(request.getName())
                 .discountPct(request.getDiscountPct())
@@ -87,8 +85,7 @@ public class PromotionController {
     public ResponseEntity<PromotionResponse> update(@AuthenticationPrincipal Jwt jwt,
                                                     @PathVariable Long id,
                                                     @Valid @RequestBody PromotionRequest request) {
-        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
-        accessControlService.requireAdmin(currentUser.getId());
+        userService.getOrCreateFromJwt(jwt);
         PromotionEntity updated = PromotionEntity.builder()
                 .name(request.getName())
                 .discountPct(request.getDiscountPct())
@@ -104,8 +101,7 @@ public class PromotionController {
     public ResponseEntity<PromotionResponse> changeStatus(@AuthenticationPrincipal Jwt jwt,
                                                           @PathVariable Long id,
                                                           @RequestParam boolean active) {
-        UserEntity currentUser = userService.getOrCreateFromJwt(jwt);
-        accessControlService.requireAdmin(currentUser.getId());
+                userService.getOrCreateFromJwt(jwt);
         return ResponseEntity.ok(PromotionResponse.from(promotionService.changeStatus(id, active)));
     }
 }
