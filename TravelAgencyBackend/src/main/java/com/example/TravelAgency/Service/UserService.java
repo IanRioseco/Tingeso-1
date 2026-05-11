@@ -82,6 +82,13 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void reactivate(Long id) {
+        UserEntity user = findById(id);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
     private UserEntity createOrLinkLocalUser(Jwt jwt, String keycloakUserId) {
         String preferredUsername = claimAsString(jwt, "preferred_username");
         String fullName = claimAsString(jwt, "name");

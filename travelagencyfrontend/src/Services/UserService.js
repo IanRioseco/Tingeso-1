@@ -12,6 +12,7 @@ const userService = {
   getAll: () => api.get('/users'),
   update: (id, data) => api.put(`/users/${id}`, data),
   deactivate: (id) => api.delete(`/users/${id}`),
+  reactivate: (id) => api.patch(`/users/${id}/reactivate`),
 };
 
 export default userService;

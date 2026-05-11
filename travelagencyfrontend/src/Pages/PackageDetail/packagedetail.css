@@ -25,5 +25,5 @@
 
 .package-detail-icon {
 	margin-right: 0.5rem;
-    color: #84fafa;
+    color: var(--color-accent);
 }

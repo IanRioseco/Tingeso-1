@@ -72,6 +72,18 @@ export default function ManageUsers() {
         }
     };
 
+    const handleReactivate = async (id) => {
+        if (!window.confirm('¿Estás seguro de que deseas reactivar este usuario?'))
+            return;
+        try {
+            await userService.reactivate(id);
+            setSuccess('Usuario reactivado correctamente');
+            fetchUsers();
+        } catch (err) {
+            setError('Error al reactivar el usuario. Por favor, intenta nuevamente.');
+        }
+    };
+
     return (
         <div className="manage-users container">
             <div className="manage-users-header">
@@ -181,13 +193,21 @@ export default function ManageUsers() {
                                     >
                                         Editar
                                     </button>
-                                    <button
-                                        className="btn btn-danger"
-                                        onClick={() => handleDeactivate(user.id)}
-                                        disabled={user.status === 'INACTIVE' || user.status === 'Inactivo'}
-                                    >
-                                        Desactivar
-                                    </button>
+                                    {user.status === 'INACTIVE' || user.status === 'Inactivo' ? (
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() => handleReactivate(user.id)}
+                                        >
+                                            Reactivar
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="btn btn-danger"
+                                            onClick={() => handleDeactivate(user.id)}
+                                        >
+                                            Desactivar
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}

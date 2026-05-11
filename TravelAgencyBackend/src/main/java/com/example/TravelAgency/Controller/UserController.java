@@ -75,4 +75,11 @@ public class UserController {
         userService.deactivate(id);
         return ResponseEntity.ok(Map.of("message", "Usuario desactivado correctamente"));
     }
+
+    @PatchMapping("/{id}/reactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> reactivate(@PathVariable Long id) {
+        userService.reactivate(id);
+        return ResponseEntity.ok(Map.of("message", "Usuario reactivado correctamente"));
+    }
 }
