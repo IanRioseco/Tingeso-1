@@ -159,18 +159,18 @@
   margin-top: var(--space-2);
 }
 
-.manage-promo .alert {
+.alert {
   padding: var(--space-3);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-3);
 }
 
-.manage-promo .alert-danger {
+.alert-danger {
   background: rgba(239,68,68,0.08);
   color: var(--color-danger-dark);
 }
 
-.manage-promo .alert-success {
+.alert-success {
   background: rgba(16,185,129,0.06);
   color: #059669;
 }
