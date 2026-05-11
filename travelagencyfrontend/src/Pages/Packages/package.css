@@ -75,7 +75,7 @@
   border-top: 1px dashed var(--color-gray-200);
 }
 
-.form-group {
+.packages-page .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -176,7 +176,7 @@
   color: #dc3545;
 }
 
-.no-results {
+.packages-page .no-results {
   text-align: center;
   padding: var(--space-8);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.96));
@@ -186,7 +186,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.no-results p {
+.packages-page .no-results p {
   color: var(--color-gray-600);
   font-size: var(--font-size-lg);
   margin-bottom: var(--space-4);

@@ -86,12 +86,12 @@
   color: #6b7280;
 }
 
-.alert {
+.admin-bookings .alert {
   padding: 0.75rem 1rem;
   border-radius: 10px;
 }
 
-.alert-danger {
+.admin-bookings .alert-danger {
   background-color: #fee2e2;
   color: #991b1b;
   border-left: 4px solid #ef4444;

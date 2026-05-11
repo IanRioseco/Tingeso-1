@@ -38,7 +38,7 @@
 .home-hero-content { max-width: 600px; margin: 0 auto; }
 .home-hero h1 { font-size: clamp(2.25rem, 4vw, 4rem); margin-bottom: var(--space-4); line-height: 1.05; }
 .home-hero p { font-size: clamp(1rem, 1.7vw, 1.15rem); margin-bottom: var(--space-8); opacity: 0.92; }
-.btn-lg { padding: var(--space-3) var(--space-8); font-size: var(--font-size-lg); }
+.home .btn-lg { padding: var(--space-3) var(--space-8); font-size: var(--font-size-lg); }
 
 .home-features {
   display: grid;

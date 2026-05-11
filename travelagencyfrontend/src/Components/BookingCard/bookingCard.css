@@ -34,7 +34,7 @@
   line-height: 1.3;
 }
 
-.badge {
+.booking-card .badge {
   padding: 4px 10px;
   border-radius: 20px;
   font-size: var(--font-size-sm);

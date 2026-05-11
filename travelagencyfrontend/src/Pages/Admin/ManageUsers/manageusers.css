@@ -103,7 +103,7 @@
     font-size: 0.9rem;
 }
 
-.status-badge {
+.manage-users .status-badge {
     display: inline-block;
     padding: 0.35rem 0.75rem;
     border-radius: 20px;
@@ -112,48 +112,48 @@
     text-transform: uppercase;
 }
 
-.status-badge.active,
-.status-badge.ACTIVE {
+.manage-users .status-badge.active,
+.manage-users .status-badge.ACTIVE {
     background-color: #d1fae5;
     color: #065f46;
 }
 
-.status-badge.inactive,
-.status-badge.INACTIVE {
+.manage-users .status-badge.inactive,
+.manage-users .status-badge.INACTIVE {
     background-color: #fee2e2;
     color: #991b1b;
 }
 
-.form-group {
+.manage-users .form-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
 }
 
-.form-group-label {
+.manage-users .form-group-label {
     display: grid;
     gap: 0.35rem;
 }
 
-.alert {
+.manage-users .alert {
     padding: 0.75rem 1rem;
     border-radius: 10px;
     margin-bottom: 1rem;
 }
 
-.alert-success {
+.manage-users .alert-success {
     background-color: #d1fae5;
     color: #065f46;
     border-left: 4px solid #10b981;
 }
 
-.alert-danger {
+.manage-users .alert-danger {
     background-color: #fee2e2;
     color: #991b1b;
     border-left: 4px solid #ef4444;
 }
 
-.btn {
+.manage-users .btn {
     padding: 0.5rem 1rem;
     border: none;
     border-radius: 8px;
@@ -163,34 +163,34 @@
     transition: all 0.2s;
 }
 
-.btn:disabled {
+.manage-users .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.btn-primary {
+.manage-users .btn-primary {
     background-color: #2563eb;
     color: white;
 }
 
-.btn-primary:hover:not(:disabled) {
+.manage-users .btn-primary:hover:not(:disabled) {
     background-color: #1d4ed8;
 }
 
-.btn-secondary {
+.manage-users .btn-secondary {
     background-color: #6b7280;
     color: white;
 }
 
-.btn-secondary:hover:not(:disabled) {
+.manage-users .btn-secondary:hover:not(:disabled) {
     background-color: #4b5563;
 }
 
-.btn-danger {
+.manage-users .btn-danger {
     background-color: #ef4444;
     color: white;
 }
 
-.btn-danger:hover:not(:disabled) {
+.manage-users .btn-danger:hover:not(:disabled) {
     background-color: #dc2626;
 }
