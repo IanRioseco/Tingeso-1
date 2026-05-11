@@ -31,9 +31,16 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Run backend unit tests
+      - name: Run backend unit tests (with debug)
         working-directory: TravelAgencyBackend
-        run: mvn test
+        run: ./mvnw -B -e -X test
+
+      - name: Upload Surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: TravelAgencyBackend/target/surefire-reports/**
 
       - name: Log in to Docker Hub
         if: github.event_name != 'pull_request'
