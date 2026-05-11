@@ -141,6 +141,15 @@ textarea {
   border: 1px solid var(--color-gray-200);
 }
 
+.btn.btn-danger {
+  background: var(--color-danger);
+  color: var(--color-white);
+}
+
+.btn.btn-danger:hover {
+  background: var(--color-danger-dark);
+}
+
 .btn.btn-outline,
 .btn.btn-outline-secondary {
   background: rgba(255, 255, 255, 0.7);

@@ -185,12 +185,3 @@
 .btn-secondary:hover:not(:disabled) {
     background-color: #4b5563;
 }
-
-.btn-danger {
-    background-color: #ef4444;
-    color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-    background-color: #dc2626;
-}
